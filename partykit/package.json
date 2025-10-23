@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "partykit": "^0.0.115",
-    "y-partyserver": "^0.0.50"
+    "y-partykit": "^0.0.33"
   },
   "scripts": {
     "dev": "bunx partykit dev",
