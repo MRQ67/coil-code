@@ -1,0 +1,20 @@
+{
+  "name": "coil-code",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "partykit": "^0.0.115",
+    "y-partyserver": "^0.0.50"
+  },
+  "scripts": {
+    "dev": "bunx partykit dev",
+    "deploy": "bunx partykit deploy"
+  }
+}

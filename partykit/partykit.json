@@ -1,0 +1,8 @@
+{
+  "name": "coil-code",
+  "main": "server.ts",
+  "compatibilityDate": "2025-01-01",
+  "parties": {
+    "editor": "server.ts"
+  }
+}
