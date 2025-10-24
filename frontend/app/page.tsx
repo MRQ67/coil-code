@@ -16,13 +16,13 @@ export default function HomePage() {
   };
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-linear-to-br from-gray-900 via-gray-800 to-gray-900">
+    <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
       <div className="w-full max-w-2xl px-6">
         {/* Main Content */}
         <div className="text-center">
           {/* Icon/Logo */}
           <div className="mb-8 flex justify-center">
-            <div className="rounded-2xl bg-linear-to-br from-blue-500 to-purple-600 p-6 shadow-2xl">
+            <div className="rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 p-6 shadow-2xl">
               <svg
                 className="h-16 w-16 text-white"
                 fill="none"
@@ -75,7 +75,7 @@ export default function HomePage() {
           {/* CTA Button */}
           <button
             onClick={handleCreateRoom}
-            className="group relative inline-flex items-center justify-center overflow-hidden rounded-xl bg-linear-to-br from-blue-500 to-purple-600 px-8 py-4 text-lg font-semibold text-white shadow-2xl transition-all duration-300 hover:scale-105 hover:shadow-blue-500/50"
+            className="group relative inline-flex items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 px-8 py-4 text-lg font-semibold text-white shadow-2xl transition-all duration-300 hover:scale-105 hover:shadow-blue-500/50"
           >
             <span className="relative flex items-center space-x-2">
               <span>Create New Room</span>

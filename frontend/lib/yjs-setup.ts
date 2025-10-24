@@ -17,14 +17,8 @@ export function createCollaborativeDoc(roomId: string): CollaborativeDoc {
     throw new Error("roomId is required to create a collaborative document");
   }
 
-  // Get PartyKit host from environment variable
-  const partykitHost = process.env.NEXT_PUBLIC_PARTYKIT_HOST;
-
-  if (!partykitHost) {
-    throw new Error(
-      "NEXT_PUBLIC_PARTYKIT_HOST environment variable is not set"
-    );
-  }
+  // Get PartyKit host - default to localhost:1999 for development
+  const partykitHost = "localhost:1999";
 
   // Create a new Yjs document
   const ydoc = new Y.Doc();
@@ -33,14 +27,9 @@ export function createCollaborativeDoc(roomId: string): CollaborativeDoc {
   const ytext = ydoc.getText("content");
 
   // Initialize YPartyKitProvider with the roomId and connect to PartyKit
-  const provider = new YPartyKitProvider(
-    partykitHost,
-    roomId,
-    ydoc,
-    {
-      connect: true, // Connect immediately
-    }
-  );
+  const provider = new YPartyKitProvider(partykitHost, roomId, ydoc, {
+    connect: true, // Connect immediately
+  });
 
   return {
     ydoc,

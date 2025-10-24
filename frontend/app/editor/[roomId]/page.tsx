@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import CollaborativeEditor from "@/components/editor/CollaborativeEditor";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import {
   createCollaborativeDoc,
   destroyCollaborativeDoc,
@@ -89,38 +90,40 @@ export default function EditorPage() {
 
   // Editor state
   return (
-    <div className="flex h-screen w-full flex-col bg-gray-900">
-      {/* Header */}
-      <header className="flex items-center justify-between border-b border-gray-700 bg-gray-800 px-6 py-3">
-        <div className="flex items-center space-x-4">
-          <h1 className="text-lg font-semibold text-white">
-            Collaborative Code Editor
-          </h1>
-          <span className="rounded-full bg-green-500/20 px-3 py-1 text-sm text-green-400">
-            Connected
-          </span>
-        </div>
-        <div className="flex items-center space-x-4">
-          <div className="text-sm text-gray-400">
-            Room: <span className="font-mono text-gray-300">{roomId}</span>
+    <ErrorBoundary>
+      <div className="flex h-screen w-full flex-col bg-gray-900">
+        {/* Header */}
+        <header className="flex items-center justify-between border-b border-gray-700 bg-gray-800 px-6 py-3">
+          <div className="flex items-center space-x-4">
+            <h1 className="text-lg font-semibold text-white">
+              Collaborative Code Editor
+            </h1>
+            <span className="rounded-full bg-green-500/20 px-3 py-1 text-sm text-green-400">
+              Connected
+            </span>
           </div>
-          <a
-            href="/"
-            className="rounded-lg bg-gray-700 px-4 py-2 text-sm text-white transition-colors hover:bg-gray-600"
-          >
-            Leave Room
-          </a>
-        </div>
-      </header>
+          <div className="flex items-center space-x-4">
+            <div className="text-sm text-gray-400">
+              Room: <span className="font-mono text-gray-300">{roomId}</span>
+            </div>
+            <a
+              href="/"
+              className="rounded-lg bg-gray-700 px-4 py-2 text-sm text-white transition-colors hover:bg-gray-600"
+            >
+              Leave Room
+            </a>
+          </div>
+        </header>
 
-      {/* Editor */}
-      <main className="flex-1 overflow-hidden">
-        <CollaborativeEditor
-          ydoc={collaborativeDoc.ydoc}
-          ytext={collaborativeDoc.ytext}
-          provider={collaborativeDoc.provider}
-        />
-      </main>
-    </div>
+        {/* Editor */}
+        <main className="flex-1 overflow-hidden">
+          <CollaborativeEditor
+            ydoc={collaborativeDoc.ydoc}
+            ytext={collaborativeDoc.ytext}
+            provider={collaborativeDoc.provider}
+          />
+        </main>
+      </div>
+    </ErrorBoundary>
   );
 }
