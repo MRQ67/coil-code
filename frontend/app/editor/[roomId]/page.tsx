@@ -176,7 +176,7 @@ export default function EditorPage() {
         <header className="flex items-center justify-between border-b border-gray-700 bg-gray-800 px-6 py-3">
           <div className="flex items-center space-x-4">
             <h1 className="text-lg font-semibold text-white">
-              Collaborative Code Editor
+              Coil Code Editor
             </h1>
             <span className="rounded-full bg-green-500/20 px-3 py-1 text-sm text-green-400">
               Connected

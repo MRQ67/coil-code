@@ -55,7 +55,7 @@ export default function UserListTooltip({
   const tooltipVariants = {
     initial: {
       opacity: 0,
-      y: 10,
+      y: -10,
       scale: 0.8,
     },
     animate: {
@@ -70,7 +70,7 @@ export default function UserListTooltip({
     },
     exit: {
       opacity: 0,
-      y: 10,
+      y: -10,
       scale: 0.8,
       transition: { duration: 0.15 },
     },
@@ -118,12 +118,12 @@ export default function UserListTooltip({
                     initial="initial"
                     animate="animate"
                     exit="exit"
-                    className="absolute -top-14 left-1/2 z-50 -translate-x-1/2 whitespace-nowrap"
+                    className="absolute top-14 left-1/2 z-50 -translate-x-1/2 whitespace-nowrap"
                   >
                     <div className="relative rounded-lg border border-white/10 bg-black/90 px-3 py-2 shadow-2xl backdrop-blur-md">
                       {/* Gradient decorations */}
-                      <div className="absolute inset-x-0 -bottom-px z-30 mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
-                      <div className="absolute inset-x-0 -bottom-px z-30 mx-auto h-px w-1/4 bg-gradient-to-r from-transparent via-purple-500 to-transparent" />
+                      <div className="absolute inset-x-0 -top-px z-30 mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
+                      <div className="absolute inset-x-0 -top-px z-30 mx-auto h-px w-1/4 bg-gradient-to-r from-transparent via-purple-500 to-transparent" />
 
                       {/* Content */}
                       <div className="relative z-30">
@@ -143,7 +143,7 @@ export default function UserListTooltip({
                       </div>
 
                       {/* Arrow pointer */}
-                      <div className="absolute -bottom-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 border-b border-r border-white/10 bg-black/90" />
+                      <div className="absolute -top-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 border-t border-l border-white/10 bg-black/90" />
                     </div>
                   </motion.div>
                 )}
@@ -160,7 +160,7 @@ export default function UserListTooltip({
                   gender={user.gender}
                   size={40}
                   className={`
-                    transition-all duration-200
+                    rounded-full transition-all duration-200
                     ${
                       user.isCurrentUser
                         ? "ring-4 ring-blue-500 shadow-lg shadow-blue-500/30"
@@ -193,11 +193,11 @@ export default function UserListTooltip({
                 initial="initial"
                 animate="animate"
                 exit="exit"
-                className="absolute -top-14 left-1/2 z-50 -translate-x-1/2 whitespace-nowrap"
+                className="absolute top-14 left-1/2 z-50 -translate-x-1/2 whitespace-nowrap"
               >
                 <div className="relative max-h-48 overflow-y-auto rounded-lg border border-white/10 bg-black/90 px-3 py-2 shadow-2xl backdrop-blur-md">
                   {/* Gradient decorations */}
-                  <div className="absolute inset-x-0 -bottom-px z-30 mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
+                  <div className="absolute inset-x-0 -top-px z-30 mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
 
                   {/* Hidden users list */}
                   <div className="relative z-30 space-y-1.5">
@@ -228,7 +228,7 @@ export default function UserListTooltip({
                   </div>
 
                   {/* Arrow pointer */}
-                  <div className="absolute -bottom-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 border-b border-r border-white/10 bg-black/90" />
+                  <div className="absolute -top-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 border-t border-l border-white/10 bg-black/90" />
                 </div>
               </motion.div>
             )}
