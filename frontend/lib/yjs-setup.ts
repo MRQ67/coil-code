@@ -68,6 +68,48 @@ export function createCollaborativeDoc(roomId: string): CollaborativeDoc {
 }
 
 /**
+ * Sets user awareness information in the Yjs provider
+ * @param provider - YPartyKitProvider instance
+ * @param userInfo - User information including username and gender
+ */
+export function setUserAwareness(
+  provider: YPartyKitProvider,
+  userInfo: {
+    username: string;
+    gender: "boy" | "girl" | "random";
+  },
+): void {
+  if (!provider || !provider.awareness) {
+    console.warn("Provider or awareness not available");
+    return;
+  }
+
+  // Generate a random color for the user (for future cursor highlighting)
+  const colors = [
+    "#FF6B6B",
+    "#4ECDC4",
+    "#45B7D1",
+    "#FFA07A",
+    "#98D8C8",
+    "#F7DC6F",
+    "#BB8FCE",
+    "#85C1E2",
+    "#F8B739",
+    "#52B788",
+  ];
+  const color = colors[Math.floor(Math.random() * colors.length)];
+
+  // Set local user state in awareness
+  provider.awareness.setLocalStateField("user", {
+    username: userInfo.username,
+    gender: userInfo.gender,
+    color: color,
+  });
+
+  console.log(`👤 User awareness set: ${userInfo.username}`);
+}
+
+/**
  * Cleans up and destroys a collaborative document
  * @param doc - The collaborative document to destroy
  */

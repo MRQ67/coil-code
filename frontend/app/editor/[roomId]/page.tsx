@@ -7,11 +7,13 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import {
   createCollaborativeDoc,
   destroyCollaborativeDoc,
+  setUserAwareness,
   type CollaborativeDoc,
 } from "@/lib/yjs-setup";
 import { useUsername } from "@/hooks/useUsername";
+import { usePresence } from "@/hooks/usePresence";
 import UsernamePrompt from "@/components/UsernamePrompt";
-import UserAvatar from "@/components/UserAvatar";
+import UserListTooltip from "@/components/editor/UserListTooltip";
 
 export default function EditorPage() {
   const params = useParams();
@@ -36,22 +38,8 @@ export default function EditorPage() {
   // Derive modal state - show if no user info and not loading
   const showModalForNewUser = !isLoadingUser && !userInfo;
 
-  // Helper function to generate random color for cursor
-  const getRandomColor = () => {
-    const colors = [
-      "#FF6B6B",
-      "#4ECDC4",
-      "#45B7D1",
-      "#FFA07A",
-      "#98D8C8",
-      "#F7DC6F",
-      "#BB8FCE",
-      "#85C1E2",
-      "#F8B739",
-      "#52B788",
-    ];
-    return colors[Math.floor(Math.random() * colors.length)];
-  };
+  // Track all connected users in real-time
+  const { users, userCount } = usePresence(collaborativeDoc?.provider || null);
 
   useEffect(() => {
     // Prevent double initialization in strict mode
@@ -76,14 +64,11 @@ export default function EditorPage() {
     try {
       doc = createCollaborativeDoc(roomId);
 
-      // Set user info in Yjs awareness
-      if (doc.provider.awareness) {
-        doc.provider.awareness.setLocalStateField("user", {
-          name: userInfo.username,
-          gender: userInfo.gender,
-          color: getRandomColor(),
-        });
-      }
+      // Set user info in Yjs awareness with proper field names
+      setUserAwareness(doc.provider, {
+        username: userInfo.username,
+        gender: userInfo.gender,
+      });
 
       // Defer setState to avoid cascading renders warning
       Promise.resolve().then(() => {
@@ -196,17 +181,20 @@ export default function EditorPage() {
             <span className="rounded-full bg-green-500/20 px-3 py-1 text-sm text-green-400">
               Connected
             </span>
+            <div className="text-sm text-gray-400">
+              Room: <span className="font-mono text-gray-300">{roomId}</span>
+            </div>
           </div>
+
           <div className="flex items-center space-x-4">
-            {/* User Avatar and Name */}
-            <div className="flex items-center space-x-2 rounded-lg bg-gray-700/50 px-3 py-2">
-              <UserAvatar
-                username={userInfo.username}
-                gender={userInfo.gender}
-                size={32}
-                showTooltip
-              />
-              <span className="text-sm text-gray-300">{userInfo.username}</span>
+            {/* Real-time User List with Stacked Avatars */}
+            <UserListTooltip users={users} maxVisible={5} />
+
+            {/* User Count Badge */}
+            <div className="rounded-lg bg-gray-700/50 px-3 py-2">
+              <span className="text-sm text-gray-400">
+                {userCount} {userCount === 1 ? "user" : "users"} online
+              </span>
             </div>
 
             {/* Edit Profile Button */}
@@ -229,11 +217,6 @@ export default function EditorPage() {
                 />
               </svg>
             </button>
-
-            {/* Room ID */}
-            <div className="text-sm text-gray-400">
-              Room: <span className="font-mono text-gray-300">{roomId}</span>
-            </div>
 
             {/* Leave Room Button */}
             <a
