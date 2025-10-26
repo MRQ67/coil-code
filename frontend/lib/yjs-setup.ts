@@ -8,6 +8,33 @@ export interface CollaborativeDoc {
 }
 
 /**
+ * Get the appropriate PartyKit host based on environment
+ * Priority: Environment variable > Local network IP > localhost
+ */
+function getPartykitHost(): string {
+  // Check for environment variable (for production or custom setup)
+  if (typeof window !== "undefined") {
+    const envHost = process.env.NEXT_PUBLIC_PARTYKIT_HOST;
+    if (envHost) {
+      return envHost;
+    }
+  }
+
+  // For development: try to use local network IP instead of localhost
+  // This allows other devices on the same network to connect
+  if (
+    typeof window !== "undefined" &&
+    window.location.hostname !== "localhost"
+  ) {
+    // If accessing via IP (e.g., 192.168.1.x), use that IP with PartyKit port
+    return `${window.location.hostname}:1999`;
+  }
+
+  // Fallback to localhost for same-machine development
+  return "localhost:1999";
+}
+
+/**
  * Creates and initializes a collaborative document with Yjs and PartyKit
  * @param roomId - Unique identifier for the collaboration room
  * @returns Object containing ydoc, ytext, and provider
@@ -17,8 +44,10 @@ export function createCollaborativeDoc(roomId: string): CollaborativeDoc {
     throw new Error("roomId is required to create a collaborative document");
   }
 
-  // Get PartyKit host - default to localhost:1999 for development
-  const partykitHost = "localhost:1999";
+  // Get PartyKit host based on environment
+  const partykitHost = getPartykitHost();
+
+  console.log(`🔌 Connecting to PartyKit at: ${partykitHost}`);
 
   // Create a new Yjs document
   const ydoc = new Y.Doc();
