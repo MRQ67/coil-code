@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { nanoid } from "nanoid";
 import { useUsername } from "@/hooks/useUsername";
@@ -8,17 +8,19 @@ import UsernamePrompt from "@/components/UsernamePrompt";
 
 export default function HomePage() {
   const router = useRouter();
-  const { userInfo, showPrompt, saveUserInfo, generateRandom } = useUsername();
+  const { userInfo, saveUserInfo, generateRandom } = useUsername();
+  const [showModal, setShowModal] = useState(false);
 
   const handleCreateRoom = () => {
     // Check if user info exists
     if (userInfo) {
-      // User info exists, create room and navigate
+      // User info exists, create room and navigate directly
       const roomId = nanoid(10);
       router.push(`/editor/${roomId}`);
+    } else {
+      // No user info, show the modal
+      setShowModal(true);
     }
-    // If no user info, the UsernamePrompt will show automatically
-    // and after saving, we'll create the room
   };
 
   // Handle username save from modal
@@ -28,6 +30,9 @@ export default function HomePage() {
   ) => {
     // Save user info
     saveUserInfo(name, gender);
+
+    // Close modal
+    setShowModal(false);
 
     // Create room and navigate
     const roomId = nanoid(10);
@@ -39,6 +44,9 @@ export default function HomePage() {
     // Generate random credentials
     generateRandom();
 
+    // Close modal
+    setShowModal(false);
+
     // Create room and navigate
     const roomId = nanoid(10);
     router.push(`/editor/${roomId}`);
@@ -46,9 +54,9 @@ export default function HomePage() {
 
   return (
     <>
-      {/* Username Prompt Modal */}
+      {/* Username Prompt Modal - Only shows when button is clicked */}
       <UsernamePrompt
-        isOpen={showPrompt}
+        isOpen={showModal}
         onSave={handleUsernameSave}
         onGenerateRandom={handleGenerateRandom}
       />
@@ -59,7 +67,7 @@ export default function HomePage() {
           <div className="text-center">
             {/* Icon/Logo */}
             <div className="mb-8 flex justify-center">
-              <div className="rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 p-6 shadow-2xl">
+              <div className="rounded-2xl bg-linear-to-br from-blue-500 to-purple-600 p-6 shadow-2xl">
                 <svg
                   className="h-16 w-16 text-white"
                   fill="none"
@@ -79,7 +87,7 @@ export default function HomePage() {
 
             {/* Heading */}
             <h1 className="mb-4 text-5xl font-bold text-white">
-              Collaborative Code Editor
+              Coil Code Editor
             </h1>
 
             <p className="mb-8 text-lg text-gray-400">

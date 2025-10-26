@@ -5,12 +5,16 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { generateRandomName, getRandomGender, type Gender } from '@/lib/name-generator';
+import { useState, useEffect, useCallback } from "react";
+import {
+  generateRandomName,
+  getRandomGender,
+  type Gender,
+} from "@/lib/name-generator";
 
 // Storage keys
-const USERNAME_STORAGE_KEY = 'collaborative-editor-username';
-const GENDER_STORAGE_KEY = 'collaborative-editor-gender';
+const USERNAME_STORAGE_KEY = "collaborative-editor-username";
+const GENDER_STORAGE_KEY = "collaborative-editor-gender";
 
 // User info interface
 export interface UserInfo {
@@ -24,14 +28,15 @@ export interface UserInfo {
  */
 export function useUsername() {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-  const [showPrompt, setShowPrompt] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   // Load user info from localStorage on mount
   useEffect(() => {
     try {
       const savedUsername = localStorage.getItem(USERNAME_STORAGE_KEY);
-      const savedGender = localStorage.getItem(GENDER_STORAGE_KEY) as Gender | null;
+      const savedGender = localStorage.getItem(
+        GENDER_STORAGE_KEY,
+      ) as Gender | null;
 
       if (savedUsername && savedGender) {
         // Valid saved data found
@@ -39,14 +44,9 @@ export function useUsername() {
           username: savedUsername,
           gender: savedGender,
         });
-        setShowPrompt(false);
-      } else {
-        // No saved data, show prompt
-        setShowPrompt(true);
       }
     } catch (error) {
-      console.error('Error loading user info from localStorage:', error);
-      setShowPrompt(true);
+      console.error("Error loading user info from localStorage:", error);
     } finally {
       setIsLoading(false);
     }
@@ -61,18 +61,20 @@ export function useUsername() {
       localStorage.setItem(GENDER_STORAGE_KEY, gender);
 
       setUserInfo({ username: name, gender });
-      setShowPrompt(false);
     } catch (error) {
-      console.error('Error saving user info to localStorage:', error);
+      console.error("Error saving user info to localStorage:", error);
     }
   }, []);
 
   /**
    * Updates existing user information
    */
-  const updateUserInfo = useCallback((name: string, gender: Gender) => {
-    saveUserInfo(name, gender);
-  }, [saveUserInfo]);
+  const updateUserInfo = useCallback(
+    (name: string, gender: Gender) => {
+      saveUserInfo(name, gender);
+    },
+    [saveUserInfo],
+  );
 
   /**
    * Clears user information from localStorage and state
@@ -84,9 +86,8 @@ export function useUsername() {
       localStorage.removeItem(GENDER_STORAGE_KEY);
 
       setUserInfo(null);
-      setShowPrompt(true);
     } catch (error) {
-      console.error('Error clearing user info from localStorage:', error);
+      console.error("Error clearing user info from localStorage:", error);
     }
   }, []);
 
@@ -100,32 +101,12 @@ export function useUsername() {
     saveUserInfo(randomName, randomGender);
   }, [saveUserInfo]);
 
-  /**
-   * Opens the username prompt modal
-   */
-  const openPrompt = useCallback(() => {
-    setShowPrompt(true);
-  }, []);
-
-  /**
-   * Closes the username prompt modal without saving
-   * (Only allowed if user info already exists)
-   */
-  const closePrompt = useCallback(() => {
-    if (userInfo) {
-      setShowPrompt(false);
-    }
-  }, [userInfo]);
-
   return {
     userInfo,
-    showPrompt,
     isLoading,
     saveUserInfo,
     updateUserInfo,
     clearUserInfo,
     generateRandom,
-    openPrompt,
-    closePrompt,
   };
 }

@@ -22,15 +22,19 @@ export default function EditorPage() {
   const [isConnected, setIsConnected] = useState(false);
   const isInitializing = useRef(false);
 
-  // Get user info and username prompt state
+  // Get user info
   const {
     userInfo,
-    showPrompt,
     isLoading: isLoadingUser,
     saveUserInfo,
     generateRandom,
-    openPrompt,
   } = useUsername();
+
+  // Local state for modal (for edit profile button)
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  // Derive modal state - show if no user info and not loading
+  const showModalForNewUser = !isLoadingUser && !userInfo;
 
   // Helper function to generate random color for cursor
   const getRandomColor = () => {
@@ -106,11 +110,13 @@ export default function EditorPage() {
     gender: "boy" | "girl" | "random",
   ) => {
     saveUserInfo(name, gender);
+    setShowEditModal(false);
   };
 
   // Handle random generation
   const handleGenerateRandom = () => {
     generateRandom();
+    setShowEditModal(false);
   };
 
   // Invalid room ID
@@ -133,12 +139,24 @@ export default function EditorPage() {
     );
   }
 
-  // Show username prompt if needed
-  if (showPrompt || !userInfo) {
+  // Show loading while checking user info
+  if (isLoadingUser) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-gray-900">
+        <div className="text-center">
+          <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
+          <p className="text-lg text-gray-300">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show modal if no user info
+  if (!userInfo) {
     return (
       <>
         <UsernamePrompt
-          isOpen={true}
+          isOpen={showModalForNewUser}
           onSave={handleUsernameSave}
           onGenerateRandom={handleGenerateRandom}
         />
@@ -193,7 +211,7 @@ export default function EditorPage() {
 
             {/* Edit Profile Button */}
             <button
-              onClick={openPrompt}
+              onClick={() => setShowEditModal(true)}
               className="rounded-lg bg-gray-700 px-3 py-2 text-sm text-white transition-colors hover:bg-gray-600"
               title="Change your profile"
             >
@@ -228,15 +246,13 @@ export default function EditorPage() {
         </header>
 
         {/* Username Prompt Modal (for editing) */}
-        {showPrompt && (
-          <UsernamePrompt
-            isOpen={showPrompt}
-            onSave={handleUsernameSave}
-            onGenerateRandom={handleGenerateRandom}
-            defaultName={userInfo.username}
-            defaultGender={userInfo.gender}
-          />
-        )}
+        <UsernamePrompt
+          isOpen={showEditModal}
+          onSave={handleUsernameSave}
+          onGenerateRandom={handleGenerateRandom}
+          defaultName={userInfo.username}
+          defaultGender={userInfo.gender}
+        />
 
         {/* Editor */}
         <main className="flex-1 overflow-hidden">
