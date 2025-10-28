@@ -1,5 +1,6 @@
 import * as Y from "yjs";
 import YPartyKitProvider from "y-partykit/provider";
+import { assignUserColor } from "./cursor-colors";
 
 export interface CollaborativeDoc {
   ydoc: Y.Doc;
@@ -84,29 +85,21 @@ export function setUserAwareness(
     return;
   }
 
-  // Generate a random color for the user (for future cursor highlighting)
-  const colors = [
-    "#FF6B6B",
-    "#4ECDC4",
-    "#45B7D1",
-    "#FFA07A",
-    "#98D8C8",
-    "#F7DC6F",
-    "#BB8FCE",
-    "#85C1E2",
-    "#F8B739",
-    "#52B788",
-  ];
-  const color = colors[Math.floor(Math.random() * colors.length)];
+  // Get deterministic color based on client ID
+  // This ensures the same client always gets the same color
+  const clientId = provider.awareness.clientID;
+  const color = assignUserColor(clientId);
 
   // Set local user state in awareness
+  // IMPORTANT: Y-Monaco looks for 'name' field for cursor labels
   provider.awareness.setLocalStateField("user", {
-    username: userInfo.username,
-    gender: userInfo.gender,
-    color: color,
+    name: userInfo.username, // Y-Monaco reads this for cursor labels
+    username: userInfo.username, // Keep for app logic compatibility
+    gender: userInfo.gender, // For avatar display
+    color: color, // Deterministic cursor color
   });
 
-  console.log(`👤 User awareness set: ${userInfo.username}`);
+  console.log(`👤 User awareness set: ${userInfo.username} (${color})`);
 }
 
 /**

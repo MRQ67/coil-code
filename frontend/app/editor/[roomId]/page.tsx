@@ -243,6 +243,8 @@ export default function EditorPage() {
             ydoc={collaborativeDoc.ydoc}
             ytext={collaborativeDoc.ytext}
             provider={collaborativeDoc.provider}
+            username={userInfo.username}
+            gender={userInfo.gender}
           />
         </main>
       </div>
