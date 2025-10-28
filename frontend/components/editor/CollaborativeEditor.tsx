@@ -91,9 +91,9 @@ export default function CollaborativeEditor({
             testCursorCSS,
           },
           {
-            forceApplyCursorColors,
-            setupCursorColorEnforcement,
+            forceApplyCursorColors: runForceApplyCursorColors,
             debugCursorColors,
+            setupCursorColorEnforcement,
           },
         ]) => {
           // Create MonacoBinding - THIS IS CRITICAL FOR CURSORS
@@ -112,10 +112,38 @@ export default function CollaborativeEditor({
             (window as any).watchCursors = () => watchCursors(provider);
             (window as any).forceUpdateCursorColors = forceUpdateCursorColors;
             (window as any).testCursorCSS = testCursorCSS;
+            // Avoid potential global name collisions causing recursion
             (window as any).forceApplyCursorColors = () =>
-              forceApplyCursorColors(provider);
+              runForceApplyCursorColors(provider);
             (window as any).debugCursorColors = () =>
               debugCursorColors(provider);
+
+            // Expose color assignment debugging
+            (window as any).debugColorAssignments = () => {
+              import("@/lib/ensure-unique-colors").then(
+                ({ debugColorAssignments }) => {
+                  const roomId =
+                    window.location.pathname.split("/").pop() || "default";
+                  debugColorAssignments(roomId);
+                },
+              );
+            };
+            (window as any).clearRoomColors = () => {
+              import("@/lib/ensure-unique-colors").then(
+                ({ clearRoomColors }) => {
+                  const roomId =
+                    window.location.pathname.split("/").pop() || "default";
+                  clearRoomColors(roomId);
+                  console.log(
+                    "🎨 Room colors cleared! Refresh both tabs to reassign.",
+                  );
+                },
+              );
+            };
+            // Clear any stale global to prevent accidental recursion
+            try {
+              delete (window as any).forceApplyCursorColors;
+            } catch {}
 
             console.log("");
             console.log("🔧 DEBUG TOOLS AVAILABLE:");
@@ -124,12 +152,18 @@ export default function CollaborativeEditor({
             console.log("   watchCursors()            - Monitor changes");
             console.log("   forceUpdateCursorColors() - Force color update");
             console.log(
-              "   forceApplyCursorColors()  - Force apply colors NOW",
+              "   applyCursorColorsNow()    - Force apply colors NOW",
             );
             console.log(
               "   debugCursorColors()       - Debug color application",
             );
             console.log("   testCursorCSS()           - Test cursor styling");
+            console.log(
+              "   debugColorAssignments()   - Show color assignments",
+            );
+            console.log(
+              "   clearRoomColors()         - Clear all colors (refresh after)",
+            );
             console.log("========================================");
             console.log("");
           }
@@ -164,24 +198,12 @@ export default function CollaborativeEditor({
           // Initialize cursor styling system
           cursorCleanupRef.current = initializeCursorStyling(provider);
 
-          // Setup automatic color enforcement (CRITICAL FIX for black cursors)
-          const editorDom = editor.getDomNode();
-          if (editorDom) {
-            const colorCleanup = setupCursorColorEnforcement(
-              provider,
-              editorDom,
-            );
-            const oldCleanup = cursorCleanupRef.current;
-            cursorCleanupRef.current = () => {
-              oldCleanup?.();
-              colorCleanup();
-            };
+          // Optional: set up automatic enforcement after binding
+          const editorNode = editor.getDomNode?.();
+          if (editorNode) {
+            // If needed, uncomment to enforce colors automatically
+            // setupCursorColorEnforcement(provider, editorNode as HTMLElement);
           }
-
-          // Force apply colors immediately
-          setTimeout(() => forceApplyCursorColors(provider), 100);
-          setTimeout(() => forceApplyCursorColors(provider), 500);
-          setTimeout(() => forceApplyCursorColors(provider), 1000);
 
           // Apply colors to cursor name tags
           const applyCursorColors = () => {
@@ -224,7 +246,7 @@ export default function CollaborativeEditor({
 
             // Re-apply colors when awareness changes
             setTimeout(applyCursorColors, 50);
-            setTimeout(() => forceApplyCursorColors(provider), 100);
+            setTimeout(() => runForceApplyCursorColors(provider), 100);
           });
         },
       )

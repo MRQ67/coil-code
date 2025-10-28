@@ -159,14 +159,9 @@ export default function UserListTooltip({
                   username={user.username}
                   gender={user.gender}
                   size={40}
-                  className={`
-                    rounded-full transition-all duration-200
-                    ${
-                      user.isCurrentUser
-                        ? "ring-4 ring-blue-500 shadow-lg shadow-blue-500/30"
-                        : "ring-2 ring-gray-800"
-                    }
-                  `}
+                  className={`rounded-full transition-all duration-200`}
+                  strokeColor={user.color}
+                  strokeWidth={user.isCurrentUser ? 4 : 2}
                 />
               </div>
             </motion.div>
@@ -213,7 +208,9 @@ export default function UserListTooltip({
                           username={user.username}
                           gender={user.gender}
                           size={24}
-                          className="ring-1 ring-gray-700"
+                          className="rounded-full"
+                          strokeColor={user.color}
+                          strokeWidth={2}
                         />
                         <span className="text-sm text-white">
                           {user.username}

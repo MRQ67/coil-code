@@ -15,6 +15,8 @@ interface UserAvatarProps {
   size?: number;
   className?: string;
   showTooltip?: boolean;
+  strokeColor?: string;
+  strokeWidth?: number;
 }
 
 export default function UserAvatar({
@@ -23,6 +25,8 @@ export default function UserAvatar({
   size = 40,
   className = "",
   showTooltip = false,
+  strokeColor,
+  strokeWidth = 2,
 }: UserAvatarProps) {
   const [imageUrl, setImageUrl] = useState<string>("");
   const [imageError, setImageError] = useState(false);
@@ -118,7 +122,14 @@ export default function UserAvatar({
   return (
     <div
       className={`relative inline-block ${className}`}
-      style={{ width: size, height: size }}
+      style={{
+        width: size,
+        height: size,
+        boxShadow: strokeColor
+          ? `0 0 0 ${strokeWidth}px ${strokeColor}`
+          : undefined,
+        borderRadius: "9999px",
+      }}
       title={showTooltip ? username : undefined}
     >
       {!imageError && imageUrl ? (

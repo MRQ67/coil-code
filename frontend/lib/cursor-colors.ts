@@ -15,32 +15,78 @@
  * - Colors rotate if more users join
  */
 export const CURSOR_COLORS = [
-  "#FF6B6B", // Red - High visibility
-  "#4ECDC4", // Teal - Calming, distinct
-  "#45B7D1", // Blue - Professional
-  "#FFA07A", // Light Salmon - Warm
-  "#98D8C8", // Mint - Soft, visible
-  "#F7DC6F", // Yellow - High contrast
-  "#BB8FCE", // Purple - Royal
-  "#85C1E2", // Sky Blue - Clear
-  "#F8B739", // Gold - Attention-grabbing
-  "#52B788", // Green - Natural
-  "#F06292", // Pink - Vibrant
-  "#7986CB", // Indigo - Deep
-  "#4DB6AC", // Turquoise - Ocean
-  "#FFD54F", // Amber - Bright
-  "#A1887F", // Brown - Earthy
+  "#FF6B6B", // 0 - Red - High visibility
+  "#4ECDC4", // 1 - Teal - Calming, distinct
+  "#45B7D1", // 2 - Blue - Professional
+  "#FFA07A", // 3 - Light Salmon - Warm
+  "#98D8C8", // 4 - Mint - Soft, visible
+  "#F7DC6F", // 5 - Yellow - High contrast
+  "#BB8FCE", // 6 - Purple - Royal
+  "#85C1E2", // 7 - Sky Blue - Clear
+  "#F8B739", // 8 - Gold - Attention-grabbing
+  "#52B788", // 9 - Green - Natural
+  "#F06292", // 10 - Pink - Vibrant
+  "#7986CB", // 11 - Indigo - Deep
+  "#4DB6AC", // 12 - Turquoise - Ocean
+  "#FFD54F", // 13 - Amber - Bright
+  "#A1887F", // 14 - Brown - Earthy
 ] as const;
 
 /**
- * Assigns a deterministic color based on client ID
- * Same client always gets same color in a session
+ * Better hash function for strings to produce a stable integer
+ * Uses FNV-1a algorithm for better distribution
+ */
+function hashString(input: string): number {
+  let hash = 2166136261; // FNV offset basis
+  for (let i = 0; i < input.length; i++) {
+    hash ^= input.charCodeAt(i);
+    hash = (hash * 16777619) >>> 0; // FNV prime, keep as unsigned 32-bit
+  }
+  // Additional mixing for better distribution
+  hash ^= hash >>> 16;
+  hash = (hash * 0x85ebca6b) >>> 0;
+  hash ^= hash >>> 13;
+  hash = (hash * 0xc2b2ae35) >>> 0;
+  hash ^= hash >>> 16;
+  return hash >>> 0; // Ensure positive
+}
+
+/**
+ * Assigns a deterministic color based on client ID and username
+ * Uses combined hash to ensure different users get different colors
+ * even if they have the same client ID (browser session sharing)
  *
  * @param clientId - The Yjs awareness client ID
+ * @param username - Username for additional uniqueness
  * @returns Hex color string
  */
-export function assignUserColor(clientId: number): string {
-  return CURSOR_COLORS[clientId % CURSOR_COLORS.length];
+export function assignUserColor(clientId: number, username?: string): string {
+  let colorIndex: number;
+
+  if (username) {
+    // Create a unique seed by combining username and clientId
+    // This ensures even similar usernames get different colors
+    const uniqueSeed = `${username}_${clientId}_${username.length}`;
+    const hash = hashString(uniqueSeed);
+
+    // Use prime multiplication for better distribution
+    const mixedHash = (hash * 2654435761) >>> 0;
+    colorIndex = mixedHash % CURSOR_COLORS.length;
+
+    console.log(
+      `🎨 Hash details: username="${username}", clientId=${clientId}, hash=${hash}, mixed=${mixedHash}, index=${colorIndex}`,
+    );
+  } else {
+    // Fallback to clientId only
+    colorIndex = Math.abs(clientId) % CURSOR_COLORS.length;
+  }
+
+  const color = CURSOR_COLORS[colorIndex];
+  console.log(
+    `🎨 Color assigned: ${color} (index: ${colorIndex}) for clientId: ${clientId}, username: ${username || "none"}`,
+  );
+
+  return color;
 }
 
 /**

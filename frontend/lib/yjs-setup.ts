@@ -1,6 +1,7 @@
 import * as Y from "yjs";
 import YPartyKitProvider from "y-partykit/provider";
 import { assignUserColor } from "./cursor-colors";
+import { ensureUniqueColor, releaseColor } from "./ensure-unique-colors";
 
 export interface CollaborativeDoc {
   ydoc: Y.Doc;
@@ -85,21 +86,50 @@ export function setUserAwareness(
     return;
   }
 
-  // Get deterministic color based on client ID
-  // This ensures the same client always gets the same color
+  // Get deterministic color per user using username + clientId
+  // Ensures different users get different colors even across sessions
   const clientId = provider.awareness.clientID;
-  const color = assignUserColor(clientId);
+  const desiredColor = assignUserColor(clientId, userInfo.username);
+
+  // Extract room ID from URL (provider doesn't have room property)
+  const roomId = window.location.pathname.split("/").pop() || "default";
+
+  // Ensure the color is unique in this room
+  const color = ensureUniqueColor(
+    roomId,
+    clientId,
+    desiredColor,
+    provider.awareness,
+  );
 
   // Set local user state in awareness
   // IMPORTANT: Y-Monaco looks for 'name' field for cursor labels
-  provider.awareness.setLocalStateField("user", {
+  const awarenessData = {
     name: userInfo.username, // Y-Monaco reads this for cursor labels
     username: userInfo.username, // Keep for app logic compatibility
     gender: userInfo.gender, // For avatar display
     color: color, // Deterministic cursor color
-  });
+  };
+
+  provider.awareness.setLocalStateField("user", awarenessData);
 
   console.log(`👤 User awareness set: ${userInfo.username} (${color})`);
+  console.log(`📋 Full awareness data:`, awarenessData);
+  console.log(
+    `🔍 Verifying awareness was set:`,
+    provider.awareness.getLocalState(),
+  );
+
+  // Double-check that name field is set correctly
+  const localState = provider.awareness.getLocalState();
+  if (!localState?.user?.name) {
+    console.error(`❌ CRITICAL: 'name' field not set in awareness!`);
+    console.error(`   Awareness state:`, localState);
+  } else {
+    console.log(
+      `✅ Confirmed: name="${localState.user.name}" is set in awareness`,
+    );
+  }
 }
 
 /**
@@ -110,6 +140,13 @@ export function destroyCollaborativeDoc(doc: CollaborativeDoc | null): void {
   if (!doc) return;
 
   try {
+    // Release the color assignment for this client
+    const roomId = window.location.pathname.split("/").pop() || "default";
+    const clientId = doc.provider.awareness?.clientID;
+    if (clientId) {
+      releaseColor(roomId, clientId);
+    }
+
     // Disconnect and destroy the provider
     doc.provider.disconnect();
     doc.provider.destroy();

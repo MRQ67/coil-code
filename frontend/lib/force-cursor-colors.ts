@@ -13,11 +13,22 @@
  * Force apply colors to all cursor elements from awareness
  * Call this after MonacoBinding is created and whenever awareness changes
  */
+let isApplying = false;
+let lastApply = 0;
+
 export function forceApplyCursorColors(provider: any): void {
   if (!provider?.awareness) {
     console.warn("⚠️ Provider or awareness not available");
     return;
   }
+
+  // Prevent re-entrant or overly frequent calls
+  const now = Date.now();
+  if (isApplying || now - lastApply < 16) {
+    return;
+  }
+  isApplying = true;
+  lastApply = now;
 
   // Get all awareness states
   const states = provider.awareness.getStates();
@@ -48,32 +59,102 @@ export function forceApplyCursorColors(provider: any): void {
 
     console.log(`🔍 Found ${cursorHeads.length} cursor element(s)`);
 
-    // Apply colors to each cursor
-    cursorHeads.forEach((head, index) => {
-      const htmlHead = head as HTMLElement;
-      const dataName = htmlHead.getAttribute("data-name");
+    // If we have exactly the right number of cursors, apply colors in order
+    if (cursorHeads.length === colorMap.size) {
+      let colorIndex = 0;
+      const colorArray = Array.from(colorMap.values());
 
-      // Find matching user by name
-      let matchedColor: string | null = null;
+      cursorHeads.forEach((head, index) => {
+        const htmlHead = head as HTMLElement;
+        const color = colorArray[colorIndex];
 
-      states.forEach((state: any, id: number) => {
-        if (id !== clientId && state.user?.name === dataName) {
-          matchedColor = state.user.color;
+        // Force set the background color
+        htmlHead.style.backgroundColor = color;
+        htmlHead.style.setProperty("background-color", color, "important");
+
+        // Also set data-name if it's missing
+        const dataName = htmlHead.getAttribute("data-name");
+        if (!dataName || dataName === "null") {
+          // Find the username for this color
+          const matchedUser = Array.from(states.entries()).find(
+            (entry: any) => {
+              const [id, state] = entry;
+              return id !== clientId && state.user?.color === color;
+            },
+          ) as [number, any] | undefined;
+          if (matchedUser && matchedUser[1]?.user?.name) {
+            htmlHead.setAttribute("data-name", matchedUser[1].user.name);
+          }
+        }
+
+        console.log(`✅ Cursor ${index + 1}: Applied color ${color}`);
+
+        colorIndex++;
+      });
+    } else {
+      // Fallback: try to match by name if possible
+      cursorHeads.forEach((head, index) => {
+        const htmlHead = head as HTMLElement;
+        const dataName = htmlHead.getAttribute("data-name");
+
+        // Find matching user by name
+        let matchedColor: string | null = null;
+        let matchedName: string | null = null;
+
+        // First try to match by name
+        if (dataName && dataName !== "null") {
+          states.forEach((state: any, id: number) => {
+            if (id !== clientId && state.user?.name === dataName) {
+              matchedColor = state.user.color;
+            }
+          });
+        }
+
+        // If no match by name, just use the first available color
+        if (!matchedColor && colorMap.size > 0) {
+          const firstEntry = Array.from(colorMap.entries())[0];
+          matchedColor = firstEntry[1];
+
+          // Find the username for this color
+          states.forEach((state: any, id: number) => {
+            if (id !== clientId && state.user?.color === matchedColor) {
+              matchedName = state.user.name;
+            }
+          });
+
+          // Set the data-name attribute
+          if (matchedName) {
+            htmlHead.setAttribute("data-name", matchedName);
+          }
+        }
+
+        if (matchedColor) {
+          // Force set the background color
+          htmlHead.style.backgroundColor = matchedColor;
+          htmlHead.style.setProperty(
+            "background-color",
+            matchedColor,
+            "important",
+          );
+
+          console.log(
+            `✅ Cursor ${index + 1} (${matchedName || dataName}): Applied color ${matchedColor}`,
+          );
+        } else {
+          console.warn(
+            `⚠️ Cursor ${index + 1}: No color found, using fallback`,
+          );
+          // Apply a fallback color
+          const fallbackColor = "#FF6B6B";
+          htmlHead.style.backgroundColor = fallbackColor;
+          htmlHead.style.setProperty(
+            "background-color",
+            fallbackColor,
+            "important",
+          );
         }
       });
-
-      if (matchedColor) {
-        // Force set the background color
-        htmlHead.style.backgroundColor = matchedColor;
-        htmlHead.style.setProperty("background-color", matchedColor, "important");
-
-        console.log(
-          `✅ Cursor ${index + 1} (${dataName}): Applied color ${matchedColor}`,
-        );
-      } else {
-        console.warn(`⚠️ Cursor ${index + 1} (${dataName}): No color found`);
-      }
-    });
+    }
 
     // Also apply colors to selection boxes
     const selectionBoxes = document.querySelectorAll(".yRemoteSelectionBox");
@@ -89,6 +170,9 @@ export function forceApplyCursorColors(provider: any): void {
         }
       }
     });
+
+    // Release re-entrancy guard
+    isApplying = false;
   });
 }
 
@@ -201,9 +285,7 @@ export function debugCursorColors(provider: any): void {
     const htmlHead = head as HTMLElement;
     const name = htmlHead.getAttribute("data-name");
     const bgColor = htmlHead.style.backgroundColor;
-    const computedColor = window
-      .getComputedStyle(htmlHead)
-      .backgroundColor;
+    const computedColor = window.getComputedStyle(htmlHead).backgroundColor;
 
     console.log(`  Cursor ${i + 1}:`);
     console.log(`    Name: ${name}`);
