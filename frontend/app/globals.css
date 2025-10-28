@@ -134,7 +134,7 @@ body {
 
 /* ============================================
    Y-MONACO COLLABORATIVE CURSOR STYLES
-   Fixed: Proper vertical line, positioning, and colors
+   Enhanced: Dynamic colors from Yjs awareness
    ============================================ */
 
 /* Remote user cursor container */
@@ -145,7 +145,7 @@ body {
 }
 
 /* Cursor vertical line (the actual cursor bar) */
-/* CRITICAL: Do NOT override background-color - Y-Monaco sets it from awareness.user.color */
+/* CRITICAL: Colors are applied dynamically via JavaScript from awareness.user.color */
 .yRemoteSelectionHead {
     position: absolute !important;
     width: 2px !important;
@@ -154,35 +154,43 @@ body {
     pointer-events: none !important;
     border-left: none !important;
     border-right: none !important;
-    animation: cursor-blink 1s step-end infinite;
     /* Y-Monaco sets background-color via inline style from user.color */
+    /* We support CSS variable as fallback: var(--cursor-bg-color) */
 }
 
-/* Ensure cursor is visible and not overridden */
+/* Fallback color if JavaScript hasn't applied one yet */
 .yRemoteSelectionHead:not([style*="background-color"]) {
-    background-color: #ff6b6b !important;
+    background-color: var(--cursor-bg-color, #ff6b6b) !important;
 }
 
 /* Cursor name tag (appears above cursor) */
-/* Uses the same color as the cursor line */
+/* Uses CSS variable --cursor-bg-color which is set by JavaScript */
 .yRemoteSelectionHead::before {
     content: attr(data-name);
     position: absolute;
     bottom: 100%;
     left: 0;
     transform: translateY(-2px);
-    padding: 2px 6px;
-    background-color: inherit;
+    padding: 3px 8px;
+    /* Use CSS variable if available, otherwise inherit from parent */
+    background-color: var(--cursor-bg-color, inherit);
     color: white;
     font-size: 11px;
     font-weight: 600;
     white-space: nowrap;
-    border-radius: 3px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
     pointer-events: none;
     z-index: 1000;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    line-height: 1.3;
+    line-height: 1.4;
+}
+
+/* Hide name tag if data-name is empty or "null" */
+.yRemoteSelectionHead:not([data-name])::before,
+.yRemoteSelectionHead[data-name=""]::before,
+.yRemoteSelectionHead[data-name="null"]::before {
+    display: none;
 }
 
 /* Selection highlight (when user selects text) */
@@ -190,7 +198,7 @@ body {
     position: absolute;
     pointer-events: none;
     opacity: 0.25 !important;
-    /* Background color is set by Y-Monaco via inline style */
+    /* Background color is set by JavaScript to match cursor color */
 }
 
 /* Smooth transitions for cursor movements */
@@ -204,7 +212,7 @@ body {
     transition: all 0.08s ease-out;
 }
 
-/* Optional: Pulse animation for newly joined users */
+/* Pulse animation for newly joined users */
 @keyframes cursor-appear {
     0% {
         opacity: 0;
@@ -220,7 +228,37 @@ body {
     }
 }
 
-/* Apply animation to new cursors (would need JS to add this class) */
+/* Apply animation to new cursors (add .cursor-new class via JS) */
 .yRemoteSelectionHead.cursor-new {
     animation: cursor-appear 0.3s ease-out;
+}
+
+/* Cursor blink animation (optional) */
+@keyframes cursor-blink {
+    0%,
+    49% {
+        opacity: 1;
+    }
+    50%,
+    100% {
+        opacity: 0.7;
+    }
+}
+
+/* Apply subtle blink to make cursors more noticeable */
+.yRemoteSelectionHead {
+    animation: cursor-blink 1.5s ease-in-out infinite;
+}
+
+/* Debug: Visual indicator if color is not applied */
+.yRemoteSelectionHead[style*="background-color: "] {
+    /* Color has been applied successfully */
+}
+
+.yRemoteSelectionHead:not([style*="background-color: "]):not(
+        [style*="background-color:"]
+    ) {
+    /* Fallback for cursors without inline color */
+    background-color: #ff6b6b !important;
+    border-left: 2px solid #ff6b6b !important;
 }

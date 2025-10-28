@@ -78,6 +78,7 @@ export default function CollaborativeEditor({
       import("@/lib/cursor-style-manager"),
       import("@/lib/debug-cursors"),
       import("@/lib/force-cursor-colors"),
+      import("@/lib/test-cursor-colors"),
     ])
       .then(
         ([
@@ -94,6 +95,15 @@ export default function CollaborativeEditor({
             forceApplyCursorColors: runForceApplyCursorColors,
             debugCursorColors,
             setupCursorColorEnforcement,
+            startContinuousColorEnforcement,
+          },
+          {
+            fullCursorDiagnostics,
+            quickColorCheck: quickColorCheckTest,
+            watchCursorChanges,
+            testColorAssignment,
+            previewCursors,
+            forceRefreshColors,
           },
         ]) => {
           // Create MonacoBinding - THIS IS CRITICAL FOR CURSORS
@@ -145,26 +155,57 @@ export default function CollaborativeEditor({
               delete (window as any).forceApplyCursorColors;
             } catch {}
 
+            // Expose comprehensive test utilities
+            (window as any).fullCursorDiagnostics = () =>
+              fullCursorDiagnostics(provider);
+            (window as any).quickColorCheckTest = () =>
+              quickColorCheckTest(provider);
+            (window as any).watchCursorChanges = () =>
+              watchCursorChanges(provider);
+            (window as any).testColorAssignment = testColorAssignment;
+            (window as any).previewCursors = () => previewCursors(provider);
+            (window as any).forceRefreshColors = () =>
+              forceRefreshColors(provider);
+            (window as any).startContinuousColors = () =>
+              startContinuousColorEnforcement(provider);
+
             console.log("");
-            console.log("🔧 DEBUG TOOLS AVAILABLE:");
-            console.log("   debugCursors()            - Full diagnostic");
-            console.log("   quickCursorCheck()        - Quick check");
-            console.log("   watchCursors()            - Monitor changes");
-            console.log("   forceUpdateCursorColors() - Force color update");
+            console.log("🔧 ════════════════════════════════════════════");
+            console.log("🔧 CURSOR COLOR DEBUG TOOLS");
+            console.log("🔧 ════════════════════════════════════════════");
+            console.log("");
+            console.log("📊 DIAGNOSTICS:");
             console.log(
-              "   applyCursorColorsNow()    - Force apply colors NOW",
+              "   fullCursorDiagnostics()   - Complete diagnostic report",
+            );
+            console.log("   quickColorCheckTest()     - Quick status check");
+            console.log("   previewCursors()          - Visual preview");
+            console.log("");
+            console.log("🔧 FIXING:");
+            console.log("   applyCursorColorsNow()    - Apply colors now");
+            console.log(
+              "   forceRefreshColors()      - Force refresh (aggressive)",
             );
             console.log(
-              "   debugCursorColors()       - Debug color application",
+              "   startContinuousColors()   - Nuclear option (100ms loop)",
             );
-            console.log("   testCursorCSS()           - Test cursor styling");
+            console.log("");
+            console.log("👁️  MONITORING:");
+            console.log("   watchCursorChanges()      - Watch in real-time");
+            console.log("");
+            console.log("🧪 TESTING:");
+            console.log("   testColorAssignment()     - Test color algorithm");
+            console.log("   debugCursors()            - Legacy diagnostic");
             console.log(
-              "   debugColorAssignments()   - Show color assignments",
+              "   debugCursorColors()       - Color application debug",
             );
-            console.log(
-              "   clearRoomColors()         - Clear all colors (refresh after)",
-            );
-            console.log("========================================");
+            console.log("   testCursorCSS()           - CSS styling test");
+            console.log("");
+            console.log("📋 COLOR MANAGEMENT:");
+            console.log("   debugColorAssignments()   - Show assignments");
+            console.log("   clearRoomColors()         - Clear & reassign");
+            console.log("");
+            console.log("🔧 ════════════════════════════════════════════");
             console.log("");
           }
 
@@ -198,36 +239,189 @@ export default function CollaborativeEditor({
           // Initialize cursor styling system
           cursorCleanupRef.current = initializeCursorStyling(provider);
 
-          // Optional: set up automatic enforcement after binding
-          const editorNode = editor.getDomNode?.();
-          if (editorNode) {
-            // If needed, uncomment to enforce colors automatically
-            // setupCursorColorEnforcement(provider, editorNode as HTMLElement);
-          }
+          // ===================================================
+          // AGGRESSIVE CURSOR COLOR APPLICATION SYSTEM
+          // ===================================================
 
-          // Apply colors to cursor name tags
+          /**
+           * Comprehensive cursor color application function
+           * Reads from awareness and directly injects styles into DOM
+           */
           const applyCursorColors = () => {
-            const cursorHeads = editor
-              .getDomNode()
-              ?.querySelectorAll(".yRemoteSelectionHead");
-            if (cursorHeads) {
-              cursorHeads.forEach((head: Element) => {
-                const bgColor = (head as HTMLElement).style.backgroundColor;
-                if (bgColor) {
-                  (head as HTMLElement).style.setProperty(
+            if (!provider?.awareness) return;
+
+            const states = provider.awareness.getStates();
+            const localClientId = provider.awareness.clientID;
+
+            // Build color map from awareness
+            const colorMap = new Map<number, { color: string; name: string }>();
+            states.forEach((state: any, clientId: number) => {
+              if (clientId !== localClientId && state.user?.color) {
+                colorMap.set(clientId, {
+                  color: state.user.color,
+                  name: state.user.name || state.user.username || "User",
+                });
+              }
+            });
+
+            if (colorMap.size === 0) {
+              // No remote users yet
+              return;
+            }
+
+            console.log(
+              `🎨 Applying colors for ${colorMap.size} remote user(s)`,
+            );
+
+            // Find all cursor elements
+            const allCursors = document.querySelectorAll(".yRemoteSelection");
+            const cursorHeads = document.querySelectorAll(
+              ".yRemoteSelectionHead",
+            );
+            const selectionBoxes = document.querySelectorAll(
+              ".yRemoteSelectionBox",
+            );
+
+            console.log(
+              `🔍 DOM elements found: ${cursorHeads.length} cursor heads, ${selectionBoxes.length} selection boxes`,
+            );
+
+            if (cursorHeads.length === 0) {
+              console.log("⏳ No cursor elements in DOM yet");
+              return;
+            }
+
+            // Strategy 1: Try to match by data-clientid attribute
+            let appliedCount = 0;
+            colorMap.forEach((userData, clientId) => {
+              const selector = `.yRemoteSelection[data-clientid="${clientId}"]`;
+              const cursorElement = document.querySelector(selector);
+
+              if (cursorElement) {
+                const head = cursorElement.querySelector(
+                  ".yRemoteSelectionHead",
+                ) as HTMLElement;
+                const boxes = cursorElement.querySelectorAll(
+                  ".yRemoteSelectionBox",
+                );
+
+                if (head) {
+                  head.style.backgroundColor = userData.color;
+                  head.style.setProperty("--cursor-bg-color", userData.color);
+                  head.setAttribute("data-name", userData.name);
+                  appliedCount++;
+                  console.log(
+                    `✅ Applied ${userData.color} to ${userData.name}'s cursor (via data-clientid)`,
+                  );
+                }
+
+                boxes.forEach((box) => {
+                  (box as HTMLElement).style.backgroundColor = userData.color;
+                });
+              }
+            });
+
+            // Strategy 2: Match by data-name attribute (fallback)
+            if (appliedCount === 0) {
+              console.log("📋 Trying name-based matching...");
+
+              cursorHeads.forEach((head) => {
+                const htmlHead = head as HTMLElement;
+                const dataName = htmlHead.getAttribute("data-name");
+
+                if (dataName && dataName !== "null") {
+                  // Find user with matching name
+                  colorMap.forEach((userData) => {
+                    if (userData.name === dataName) {
+                      htmlHead.style.backgroundColor = userData.color;
+                      htmlHead.style.setProperty(
+                        "--cursor-bg-color",
+                        userData.color,
+                      );
+                      appliedCount++;
+                      console.log(
+                        `✅ Applied ${userData.color} to ${userData.name}'s cursor (via name match)`,
+                      );
+                    }
+                  });
+                }
+              });
+            }
+
+            // Strategy 3: Sequential assignment (if we have equal counts)
+            if (appliedCount === 0 && cursorHeads.length === colorMap.size) {
+              console.log("🔢 Using sequential color assignment...");
+
+              const colorArray = Array.from(colorMap.values());
+              cursorHeads.forEach((head, index) => {
+                const htmlHead = head as HTMLElement;
+                const userData = colorArray[index];
+
+                if (userData) {
+                  htmlHead.style.backgroundColor = userData.color;
+                  htmlHead.style.setProperty(
                     "--cursor-bg-color",
-                    bgColor,
+                    userData.color,
+                  );
+                  htmlHead.setAttribute("data-name", userData.name);
+                  appliedCount++;
+                  console.log(
+                    `✅ Applied ${userData.color} to cursor ${index + 1} (sequential)`,
                   );
                 }
               });
             }
+
+            // Strategy 4: Apply first available color to uncolored cursors
+            if (appliedCount === 0 && colorMap.size > 0) {
+              console.log(
+                "🎲 Applying first available color to all cursors...",
+              );
+
+              const firstUser = Array.from(colorMap.values())[0];
+              cursorHeads.forEach((head) => {
+                const htmlHead = head as HTMLElement;
+                htmlHead.style.backgroundColor = firstUser.color;
+                htmlHead.style.setProperty(
+                  "--cursor-bg-color",
+                  firstUser.color,
+                );
+                htmlHead.setAttribute("data-name", firstUser.name);
+                appliedCount++;
+              });
+              console.log(`✅ Applied fallback color ${firstUser.color}`);
+            }
+
+            // Always apply colors to selection boxes
+            const parent = document.querySelector(".monaco-editor");
+            if (parent) {
+              const boxes = parent.querySelectorAll(".yRemoteSelectionBox");
+              boxes.forEach((box) => {
+                const htmlBox = box as HTMLElement;
+                const parentCursor = htmlBox.closest(".yRemoteSelection");
+                const head = parentCursor?.querySelector(
+                  ".yRemoteSelectionHead",
+                ) as HTMLElement;
+
+                if (head?.style.backgroundColor) {
+                  htmlBox.style.backgroundColor = head.style.backgroundColor;
+                  htmlBox.style.opacity = "0.25";
+                }
+              });
+            }
+
+            console.log(`🎨 Total colors applied: ${appliedCount}`);
           };
 
-          // Apply colors initially and on changes
-          setTimeout(applyCursorColors, 100);
+          // Apply colors with multiple timing strategies
+          setTimeout(applyCursorColors, 50);
+          setTimeout(applyCursorColors, 150);
+          setTimeout(applyCursorColors, 300);
+          setTimeout(applyCursorColors, 600);
+          setTimeout(applyCursorColors, 1000);
 
-          // Listen for awareness changes (other users' cursors)
-          provider.awareness.on("change", () => {
+          // Listen for awareness changes
+          const awarenessChangeHandler = () => {
             const states = provider.awareness.getStates();
             const remoteUsers = Array.from(states.entries())
               .filter(([id]) => id !== clientId)
@@ -246,8 +440,93 @@ export default function CollaborativeEditor({
 
             // Re-apply colors when awareness changes
             setTimeout(applyCursorColors, 50);
+            setTimeout(applyCursorColors, 200);
             setTimeout(() => runForceApplyCursorColors(provider), 100);
-          });
+          };
+
+          provider.awareness.on("change", awarenessChangeHandler);
+
+          // MutationObserver to watch for new cursor elements
+          const editorDom = editor.getDomNode();
+          let mutationObserver: MutationObserver | null = null;
+
+          if (editorDom) {
+            mutationObserver = new MutationObserver((mutations) => {
+              let hasNewCursors = false;
+
+              mutations.forEach((mutation) => {
+                mutation.addedNodes.forEach((node) => {
+                  if (node instanceof HTMLElement) {
+                    if (
+                      node.classList.contains("yRemoteSelection") ||
+                      node.classList.contains("yRemoteSelectionHead") ||
+                      node.querySelector(".yRemoteSelection") ||
+                      node.querySelector(".yRemoteSelectionHead")
+                    ) {
+                      hasNewCursors = true;
+                    }
+                  }
+                });
+              });
+
+              if (hasNewCursors) {
+                console.log("🆕 New cursor elements detected in DOM");
+                setTimeout(applyCursorColors, 30);
+                setTimeout(applyCursorColors, 100);
+              }
+            });
+
+            mutationObserver.observe(editorDom, {
+              childList: true,
+              subtree: true,
+              attributes: true,
+              attributeFilter: ["class", "style", "data-name"],
+            });
+
+            console.log("👁️ MutationObserver active on Monaco editor");
+          }
+
+          // Periodic color enforcement (every 2 seconds)
+          const colorCheckInterval = setInterval(() => {
+            applyCursorColors();
+          }, 2000);
+
+          // Store cleanup function
+          const cleanupColorSystem = () => {
+            provider.awareness.off("change", awarenessChangeHandler);
+            if (mutationObserver) {
+              mutationObserver.disconnect();
+            }
+            clearInterval(colorCheckInterval);
+            console.log("🧹 Cursor color system cleaned up");
+          };
+
+          // Store in ref for cleanup
+          if (!cursorCleanupRef.current) {
+            cursorCleanupRef.current = cleanupColorSystem;
+          } else {
+            const oldCleanup = cursorCleanupRef.current;
+            cursorCleanupRef.current = () => {
+              oldCleanup();
+              cleanupColorSystem();
+            };
+          }
+
+          // Expose color application function globally
+          if (typeof window !== "undefined") {
+            (window as any).applyCursorColorsNow = applyCursorColors;
+            console.log("   applyCursorColorsNow()    - Apply colors NOW");
+          }
+
+          // Initialize cursor styling system
+          initializeCursorStyling(provider);
+
+          // Optional: Enable continuous enforcement (nuclear option)
+          // Uncomment the lines below if colors still don't stick
+          // const editorNode = editor.getDomNode?.();
+          // if (editorNode) {
+          //   setupCursorColorEnforcement(provider, editorNode as HTMLElement);
+          // }
         },
       )
       .catch((error) => {
