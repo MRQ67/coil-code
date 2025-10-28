@@ -67,7 +67,7 @@ export function fullCursorDiagnostics(provider: any): void {
  * Check awareness state and user data
  */
 function checkAwarenessState(provider: any): void {
-  const states = provider.awareness.getStates();
+  const states = provider.awareness.getStates() as Map<number, any>;
   const localClientId = provider.awareness.clientID;
   const localState = provider.awareness.getLocalState();
 
@@ -100,7 +100,10 @@ function checkAwarenessState(provider: any): void {
 
   // Check remote users
   const remoteUsers = Array.from(states.entries()).filter(
-    ([id]) => id !== localClientId,
+    (entry): entry is [number, any] => {
+      const [id] = entry;
+      return id !== localClientId;
+    },
   );
 
   if (remoteUsers.length === 0) {
@@ -155,12 +158,15 @@ function checkDOMElements(): void {
  * Check if colors are properly applied to DOM elements
  */
 function checkColorApplication(provider: any): void {
-  const states = provider.awareness.getStates();
+  const states = provider.awareness.getStates() as Map<number, any>;
   const localClientId = provider.awareness.clientID;
   const cursorHeads = document.querySelectorAll(".yRemoteSelectionHead");
 
   const remoteUsers = Array.from(states.entries()).filter(
-    ([id]) => id !== localClientId,
+    (entry): entry is [number, any] => {
+      const [id] = entry;
+      return id !== localClientId;
+    },
   );
 
   console.log(`   Expected Cursors: ${remoteUsers.length}`);
@@ -262,11 +268,14 @@ function checkCSSStatus(): void {
  * Provide recommendations based on diagnostics
  */
 function provideRecommendations(provider: any): void {
-  const states = provider.awareness.getStates();
+  const states = provider.awareness.getStates() as Map<number, any>;
   const localClientId = provider.awareness.clientID;
   const cursorHeads = document.querySelectorAll(".yRemoteSelectionHead");
   const remoteUsers = Array.from(states.entries()).filter(
-    ([id]) => id !== localClientId,
+    (entry): entry is [number, any] => {
+      const [id] = entry;
+      return id !== localClientId;
+    },
   );
 
   const recommendations: string[] = [];
@@ -338,11 +347,14 @@ export function quickColorCheck(provider: any): void {
     return;
   }
 
-  const states = provider.awareness.getStates();
+  const states = provider.awareness.getStates() as Map<number, any>;
   const localClientId = provider.awareness.clientID;
   const cursorHeads = document.querySelectorAll(".yRemoteSelectionHead");
   const remoteUsers = Array.from(states.entries()).filter(
-    ([id]) => id !== localClientId,
+    (entry): entry is [number, any] => {
+      const [id] = entry;
+      return id !== localClientId;
+    },
   );
 
   console.log("🔍 Quick Check:");
@@ -379,10 +391,13 @@ export function watchCursorChanges(provider: any): () => void {
   );
 
   const awarenessHandler = () => {
-    const states = provider.awareness.getStates();
+    const states = provider.awareness.getStates() as Map<number, any>;
     const localClientId = provider.awareness.clientID;
     const remoteUsers = Array.from(states.entries()).filter(
-      ([id]) => id !== localClientId,
+      (entry): entry is [number, any] => {
+        const [id] = entry;
+        return id !== localClientId;
+      },
     );
 
     console.log(`🔄 Awareness changed: ${remoteUsers.length} remote user(s)`);
@@ -488,7 +503,7 @@ export function previewCursors(provider: any): void {
   console.log("🎨 CURSOR PREVIEW:");
   console.log("");
 
-  const states = provider.awareness.getStates();
+  const states = provider.awareness.getStates() as Map<number, any>;
   const localClientId = provider.awareness.clientID;
 
   states.forEach((state: any, id: number) => {
