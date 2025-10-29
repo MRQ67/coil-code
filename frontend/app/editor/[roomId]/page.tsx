@@ -12,6 +12,7 @@ import {
 } from "@/lib/yjs-setup";
 import { useUsername } from "@/hooks/useUsername";
 import { usePresence } from "@/hooks/usePresence";
+import { useAutoSave } from "@/hooks/useAutoSave";
 import UsernamePrompt from "@/components/UsernamePrompt";
 import UserListTooltip from "@/components/editor/UserListTooltip";
 
@@ -22,6 +23,7 @@ export default function EditorPage() {
   const [collaborativeDoc, setCollaborativeDoc] =
     useState<CollaborativeDoc | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const isInitializing = useRef(false);
 
   // Get user info
@@ -88,6 +90,53 @@ export default function EditorPage() {
       isInitializing.current = false;
     };
   }, [roomId, userInfo, isLoadingUser]);
+
+  // Load room content
+  useEffect(() => {
+    if (!collaborativeDoc || !roomId) return;
+
+    const load = async () => {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+
+        const res = await fetch(`/api/rooms/${roomId}`, {
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.content) {
+            collaborativeDoc.ytext.delete(0, collaborativeDoc.ytext.length);
+            collaborativeDoc.ytext.insert(0, data.content);
+          }
+        } else if (res.status === 408) { // Request timeout
+          console.warn('⚠️ Load timeout:', new Date().toLocaleTimeString());
+        } else {
+          console.error('❌ Load failed with status:', res.status);
+        }
+      } catch (error) {
+        const err = error as { name?: string; message?: string } | Error | unknown;
+        if (err && typeof err === 'object' && 'name' in err && (err as { name: string }).name === 'AbortError') {
+          console.warn('⚠️ Load timeout:', new Date().toLocaleTimeString());
+        } else {
+          console.error('❌ Load failed:', error);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, [collaborativeDoc, roomId]);
+
+  // Auto-save
+  useAutoSave({
+    roomId: roomId || '',
+    content: () => collaborativeDoc?.ytext.toString() || '',
+    username: userInfo?.username || '',
+  });
 
   // Handle username save from modal
   const handleUsernameSave = (
@@ -156,12 +205,12 @@ export default function EditorPage() {
   }
 
   // Loading state
-  if (!isConnected || !collaborativeDoc) {
+  if (!isConnected || !collaborativeDoc || isLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-gray-900">
         <div className="text-center">
           <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
-          <p className="text-lg text-gray-300">Connecting to room...</p>
+          <p className="text-lg text-gray-300">Loading room content...</p>
           <p className="mt-2 text-sm text-gray-500">Room ID: {roomId}</p>
         </div>
       </div>
