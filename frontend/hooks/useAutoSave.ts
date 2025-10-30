@@ -16,6 +16,7 @@ export function useAutoSave({ roomId, content, username, interval = 30000 }: Use
   useEffect(() => {
     const save = async () => {
       const current = content();
+      // Only save if content has actually changed (with a small tolerance for empty content)
       if (current === lastSaveRef.current) return;
       
       // Clear any existing timeout
@@ -30,7 +31,11 @@ export function useAutoSave({ roomId, content, username, interval = 30000 }: Use
         const res = await fetch(`/api/rooms/${roomId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content: current, username }),
+          body: JSON.stringify({ 
+            content: current, 
+            username,
+            timestamp: Date.now() // Include timestamp to track when saved
+          }),
           signal: controller.signal
         });
         
@@ -42,7 +47,7 @@ export function useAutoSave({ roomId, content, username, interval = 30000 }: Use
         if (res.ok) {
           lastSaveRef.current = current;
           retryCountRef.current = 0; // Reset retry count on success
-          console.log('✅ Saved:', new Date().toLocaleTimeString());
+          console.log('✅ Saved:', new Date().toLocaleTimeString(), `- Content length: ${current.length}`);
         } else if (res.status === 408) { // Request timeout
           console.warn('⚠️ Save timeout, will retry:', new Date().toLocaleTimeString());
           if (retryCountRef.current < maxRetries) {
@@ -78,13 +83,16 @@ export function useAutoSave({ roomId, content, username, interval = 30000 }: Use
       }
     };
 
-    save();
+    // Initial save after a short delay to allow editor to initialize
+    const initialSaveTimer = setTimeout(save, 500);
+    
     const id = setInterval(save, interval);
     window.addEventListener('beforeunload', save);
 
     return () => {
       clearInterval(id);
       window.removeEventListener('beforeunload', save);
+      clearTimeout(initialSaveTimer);
       if (timeoutIdRef.current) {
         clearTimeout(timeoutIdRef.current);
       }
@@ -95,7 +103,11 @@ export function useAutoSave({ roomId, content, username, interval = 30000 }: Use
       fetch(`/api/rooms/${roomId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: content(), username }),
+        body: JSON.stringify({ 
+          content: content(), 
+          username,
+          timestamp: Date.now()
+        }),
         signal: cleanupController.signal
       }).catch((err: unknown) => {
         // Check if it's an AbortError and handle it gracefully

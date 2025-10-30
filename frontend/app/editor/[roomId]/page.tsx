@@ -91,9 +91,11 @@ export default function EditorPage() {
     };
   }, [roomId, userInfo, isLoadingUser]);
 
-  // Load room content
+  // Load room content only once after initial connection
   useEffect(() => {
-    if (!collaborativeDoc || !roomId) return;
+    if (!collaborativeDoc || !roomId || !isConnected) return;
+
+    let isCancelled = false;
 
     const load = async () => {
       try {
@@ -106,11 +108,23 @@ export default function EditorPage() {
         
         clearTimeout(timeoutId);
 
+        if (isCancelled) return;
+
         if (res.ok) {
           const data = await res.json();
-          if (data.content) {
+          if (data.content !== undefined) {
+            // Normalize line endings to prevent cross-platform issues
+            const normalizedContent = data.content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+            
+            // Temporarily disconnect to prevent conflicts during initial content load
+            collaborativeDoc.provider.disconnect();
+            
+            // Clear the current content and insert the loaded content
             collaborativeDoc.ytext.delete(0, collaborativeDoc.ytext.length);
-            collaborativeDoc.ytext.insert(0, data.content);
+            collaborativeDoc.ytext.insert(0, normalizedContent);
+            
+            // Reconnect to resume synchronization
+            collaborativeDoc.provider.connect();
           }
         } else if (res.status === 408) { // Request timeout
           console.warn('⚠️ Load timeout:', new Date().toLocaleTimeString());
@@ -125,11 +139,20 @@ export default function EditorPage() {
           console.error('❌ Load failed:', error);
         }
       } finally {
-        setIsLoading(false);
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
       }
     };
-    load();
-  }, [collaborativeDoc, roomId]);
+
+    // Add a small delay to ensure the provider is fully connected before loading
+    const timer = setTimeout(load, 100);
+
+    return () => {
+      isCancelled = true;
+      clearTimeout(timer);
+    };
+  }, [collaborativeDoc, roomId, isConnected]);
 
   // Auto-save
   useAutoSave({

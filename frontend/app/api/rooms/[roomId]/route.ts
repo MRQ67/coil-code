@@ -18,7 +18,7 @@ export async function GET(
     const db = client.db('collaborative-editor');
     
     // Find the room - the timeout is handled by the MongoDB client configuration
-    const room = await db.collection('rooms').findOne({ _id: roomId });
+    const room = await db.collection('rooms').findOne({ roomId: roomId });
     
     // Instead of returning 404, return empty room data for new rooms (200 OK)
     return NextResponse.json(
@@ -57,18 +57,24 @@ export async function POST(
     }
 
     const { content, language = 'javascript', username } = await request.json();
+    
+    // Normalize line endings to ensure consistency across platforms
+    const normalizedContent = typeof content === 'string' 
+      ? content.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+      : content;
+    
     const client = await clientPromise;
     const db = client.db('collaborative-editor');
     const now = new Date();
     
     // Update with timeout handled by MongoDB client configuration
     await db.collection('rooms').updateOne(
-      { _id: roomId },
+      { roomId: roomId },
       {
-        $set: { content, language, lastEditedAt: now, lastEditedBy: username },
+        $set: { content: normalizedContent, language, lastEditedAt: now, lastEditedBy: username },
         $setOnInsert: { 
           createdAt: now,
-          _id: roomId  // Explicitly set the _id to ensure it's properly stored
+          roomId: roomId  // Use roomId field instead of _id
         },
       },
       { upsert: true }
