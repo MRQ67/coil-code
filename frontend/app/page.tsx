@@ -1,160 +1,236 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { nanoid } from "nanoid";
-import { useUsername } from "@/hooks/useUsername";
-import UsernamePrompt from "@/components/UsernamePrompt";
+import Image from "next/image";
 
 export default function HomePage() {
   const router = useRouter();
-  const { userInfo, saveUserInfo, generateRandom } = useUsername();
-  const [showModal, setShowModal] = useState(false);
+  const [roomCode, setRoomCode] = useState("");
 
-  const handleCreateRoom = () => {
-    // Check if user info exists
-    if (userInfo) {
-      // User info exists, create room and navigate directly
-      const roomId = nanoid(10);
-      router.push(`/editor/${roomId}`);
-    } else {
-      // No user info, show the modal
-      setShowModal(true);
-    }
+  const createNewRoom = () => {
+    router.push(`/editor/${nanoid(10)}`);
   };
 
-  // Handle username save from modal
-  const handleUsernameSave = (
-    name: string,
-    gender: "boy" | "girl" | "random",
-  ) => {
-    // Save user info
-    saveUserInfo(name, gender);
-
-    // Close modal
-    setShowModal(false);
-
-    // Create room and navigate
-    const roomId = nanoid(10);
-    router.push(`/editor/${roomId}`);
-  };
-
-  // Handle random generation
-  const handleGenerateRandom = () => {
-    // Generate random credentials
-    generateRandom();
-
-    // Close modal
-    setShowModal(false);
-
-    // Create room and navigate
-    const roomId = nanoid(10);
-    router.push(`/editor/${roomId}`);
+  const joinRoom = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (roomCode.trim()) router.push(`/editor/${roomCode.trim()}`);
   };
 
   return (
-    <>
-      {/* Username Prompt Modal - Only shows when button is clicked */}
-      <UsernamePrompt
-        isOpen={showModal}
-        onSave={handleUsernameSave}
-        onGenerateRandom={handleGenerateRandom}
-      />
+    <main className="min-h-screen bg-[#222831] relative overflow-hidden">
+      {/* Decorative Blobs */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-[#DFD0B8] rounded-full opacity-10 blur-3xl -translate-y-1/2 translate-x-1/2 -z-10" />
+      <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#DFD0B8] rounded-full opacity-10 blur-3xl translate-y-1/2 -translate-x-1/2 -z-10" />
 
-      <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-        <div className="w-full max-w-2xl px-6">
-          {/* Main Content */}
-          <div className="text-center">
-            {/* Icon/Logo */}
-            <div className="mb-8 flex justify-center">
-              <div className="rounded-2xl bg-linear-to-br from-blue-500 to-purple-600 p-6 shadow-2xl">
-                <svg
-                  className="h-16 w-16 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
-                  />
-                </svg>
-              </div>
-            </div>
+      <div className="relative z-10 container mx-auto px-6 md:px-12 py-8">
+        {/* Header: Logo left, GitHub right */}
+        <header className="flex justify-between items-center mb-16">
+          {/* Logo only - no text */}
+          <div className="flex items-center">
+            <Image
+              src="/logo.svg"
+              alt="Coil Code Logo"
+              width={120}
+              height={120}
+              className="w-15 h-15"
+            />
+          </div>
 
-            {/* Heading */}
-            <h1 className="mb-4 text-5xl font-bold text-white">
-              Coil Code Editor
-            </h1>
-
-            <p className="mb-8 text-lg text-gray-400">
-              Write code together in real-time with your team
-            </p>
-
-            {/* Features */}
-            <div className="mb-12 grid grid-cols-1 gap-4 md:grid-cols-3">
-              <div className="rounded-lg bg-gray-800/50 p-4 backdrop-blur-sm">
-                <div className="mb-2 text-2xl">⚡</div>
-                <h3 className="mb-1 font-semibold text-white">
-                  Real-time Sync
-                </h3>
-                <p className="text-sm text-gray-400">
-                  See changes instantly as you type
-                </p>
-              </div>
-              <div className="rounded-lg bg-gray-800/50 p-4 backdrop-blur-sm">
-                <div className="mb-2 text-2xl">🔒</div>
-                <h3 className="mb-1 font-semibold text-white">Private Rooms</h3>
-                <p className="text-sm text-gray-400">
-                  Secure collaboration spaces
-                </p>
-              </div>
-              <div className="rounded-lg bg-gray-800/50 p-4 backdrop-blur-sm">
-                <div className="mb-2 text-2xl">🎨</div>
-                <h3 className="mb-1 font-semibold text-white">Modern Editor</h3>
-                <p className="text-sm text-gray-400">
-                  Powered by Monaco Editor
-                </p>
-              </div>
-            </div>
-
-            {/* CTA Button */}
-            <button
-              onClick={handleCreateRoom}
-              className="group relative inline-flex items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 px-8 py-4 text-lg font-semibold text-white shadow-2xl transition-all duration-300 hover:scale-105 hover:shadow-blue-500/50"
+          {/* GitHub button */}
+          <div className="text-right">
+            <p className="text-[#948979] text-sm mb-2">check it out in</p>
+            <a
+              href="https://github.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center space-x-2 bg-[#DFD0B8] text-[#222831] px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-all duration-200"
             >
-              <span className="relative flex items-center space-x-2">
-                <span>Create New Room</span>
-                <svg
-                  className="h-5 w-5 transition-transform group-hover:translate-x-1"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+              <Image
+                src="/soical_icons/github-142-svgrepo-com.svg"
+                alt="GitHub"
+                width={20}
+                height={20}
+                className="w-5 h-5"
+              />
+              <span>GitHub</span>
+            </a>
+          </div>
+        </header>
+
+        {/* Hero: 50/50 grid */}
+        <div className="grid md:grid-cols-[50%_50%] gap-4 items-center min-h-[30vh]">
+          <div className="space-y-1">
+            {/* Hero text */}
+            <div className="space-y-3">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
+                Coil Code{" "}
+                <Image
+                  src="/inline_logo.svg"
+                  alt=""
+                  width={44}
+                  height={44}
+                  className="inline w-11 h-11 md:w-12 md:h-12 align-middle"
+                />{" "}
+                is a collaborative web code editor made by{" "}
+                <Image
+                  src="/aa3_logo.svg"
+                  alt="AA3 Logo"
+                  width={50}
+                  height={38}
+                  className="inline w-11 h-10 md:w-12 md:h-11 align-middle"
+                />
+              </h1>
+
+              <div className="text-lg md:text-xl text-white space-y-2">
+                <p className="flex items-center flex-wrap gap-2">
+                  Built using Next.js{" "}
+                  <Image
+                    src="/nextjs-icon.svg"
+                    alt="Next.js"
+                    width={28}
+                    height={28}
+                    className="w-7 h-7 align-middle"
                   />
-                </svg>
-              </span>
+                  <span className="text-[#948979] text-sm">(frontend)</span>,
+                  Yjs{" "}
+                  <Image
+                    src="/yjs-icon.svg"
+                    alt="Yjs"
+                    width={28}
+                    height={28}
+                    className="w-7 h-7 align-middle"
+                  />
+                  <span className="text-[#948979] text-sm">
+                    (synchronization)
+                  </span>
+                  , PartyKit{" "}
+                  <Image
+                    src="/partykit-icon.svg"
+                    alt="PartyKit"
+                    width={28}
+                    height={28}
+                    className="w-7 h-7 align-middle"
+                  />
+                  <span className="text-[#948979] text-sm">(backend)</span>, and
+                  it is - <strong>Powered by Monaco Editor</strong>.
+                </p>
+              </div>
+            </div>
+
+            {/* Create Room button */}
+            <button
+              onClick={createNewRoom}
+              className="bg-[#DFD0B8] text-[#222831] px-8 py-2 rounded-xl text-lg font-semibold hover:transform hover:scale-105 hover:shadow-lg transition-all duration-200 flex items-center space-x-2 mt-6"
+            >
+              <span>Create New Room</span>
+              <span>→</span>
             </button>
 
-            <p className="mt-6 text-sm text-gray-500">
-              No sign-up required • Free to use • Instant collaboration
-            </p>
+            {/* "or" divider */}
+            <div className="flex items-center space-x-4 mt-4">
+              <div className="flex-1 h-px bg-[#948979] opacity-30"></div>
+              <span className="text-[#948979] text-sm">or</span>
+              <div className="flex-1 h-px bg-[#948979] opacity-30"></div>
+            </div>
+
+            {/* Join room input + GO button */}
+            <form onSubmit={joinRoom} className="flex space-x-3 mt-6">
+              <input
+                type="text"
+                placeholder="Enter Room Code"
+                value={roomCode}
+                onChange={(e) => setRoomCode(e.target.value)}
+                className="flex-1 px-4 py-1 rounded-lg bg-white text-[#222831] placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#DFD0B8]"
+              />
+              <button
+                type="submit"
+                className="bg-[#948979] text-white px-6 py-1 rounded-lg font-medium hover:bg-opacity-90 transition-all duration-200"
+              >
+                GO
+              </button>
+            </form>
           </div>
 
-          {/* Footer */}
-          <div className="mt-16 text-center text-sm text-gray-600">
-            <p>Built with Next.js, Yjs, PartyKit, and Monaco Editor</p>
+          <div className="order-first md:order-last -mt-14">
+            {/* Video placeholder */}
+            <div className="bg-[#393E46] rounded-xl aspect-video shadow-2xl flex items-center justify-center">
+              <div className="text-white text-lg font-medium opacity-50">
+                Demo Video Coming Soon
+              </div>
+            </div>
           </div>
         </div>
+
+        {/* Footer: Copyright left, socials right */}
+        <footer className="mt-24 flex flex-col md:flex-row justify-between items-center gap-4 pt-8 border-t border-[#948979] border-opacity-20">
+          {/* Copyright */}
+          <p className="text-[#948979] text-sm">
+            © 2025 Coil Code by AA³. All rights reserved
+          </p>
+
+          {/* Social icons */}
+          <div className="flex items-center space-x-6">
+            <a
+              href="https://github.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#DFD0B8] hover:text-white transition-colors duration-200"
+            >
+              <Image
+                src="/soical_icons/github-142-svgrepo-com.svg"
+                alt="GitHub"
+                width={24}
+                height={24}
+                className="w-6 h-6"
+              />
+            </a>
+            <a
+              href="https://twitter.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#DFD0B8] hover:text-white transition-colors duration-200"
+            >
+              <Image
+                src="/soical_icons/X_logo_2023_original.svg"
+                alt="Twitter"
+                width={24}
+                height={24}
+                className="w-6 h-6"
+              />
+            </a>
+            <a
+              href="https://linkedin.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#DFD0B8] hover:text-white transition-colors duration-200"
+            >
+              <Image
+                src="/soical_icons/linkedin-svgrepo-com.svg"
+                alt="LinkedIn"
+                width={24}
+                height={24}
+                className="w-6 h-6"
+              />
+            </a>
+            <a
+              href="https://instagram.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#DFD0B8] hover:text-white transition-colors duration-200"
+            >
+              <Image
+                src="/soical_icons/instagram-167-svgrepo-com.svg"
+                alt="Instagram"
+                width={24}
+                height={24}
+                className="w-6 h-6"
+              />
+            </a>
+          </div>
+        </footer>
       </div>
-    </>
+    </main>
   );
 }
