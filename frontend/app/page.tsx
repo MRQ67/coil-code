@@ -153,9 +153,9 @@ export default function HomePage() {
             </form>
           </div>
 
-          <div className="order-first md:order-last -mt-14">
+          <div className="order-first md:order-last -mt-14 translate-x-26">
             {/* Video placeholder */}
-            <div className="bg-[#393E46] rounded-xl aspect-video shadow-2xl flex items-center justify-center">
+            <div className="bg-[#393E46] rounded-xl aspect-4/3 shadow-2xl flex items-center justify-center w-4/5">
               <div className="text-white text-lg font-medium opacity-50">
                 Demo Video Coming Soon
               </div>
