@@ -5,13 +5,13 @@ import { useRouter } from "next/navigation";
 import { nanoid } from "nanoid";
 import Image from "next/image";
 import RoomCodeDialog from "@/components/RoomCodeDialog";
-import { 
-  Glimpse, 
-  GlimpseTrigger, 
-  GlimpseContent, 
-  GlimpseTitle, 
+import {
+  Glimpse,
+  GlimpseTrigger,
+  GlimpseContent,
+  GlimpseTitle,
   GlimpseDescription,
-  GlimpseImage
+  GlimpseImage,
 } from "@/components/kibo-ui/glimpse";
 
 export default function HomePage() {
@@ -93,7 +93,12 @@ export default function HomePage() {
                 is a collaborative web code editor made by{" "}
                 <Glimpse>
                   <GlimpseTrigger asChild>
-                    <a href="https://aa3.site" target="_blank" rel="noopener noreferrer" className="inline-block">
+                    <a
+                      href="https://aa3.site"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block"
+                    >
                       <Image
                         src="/aa3_logo.svg"
                         alt="AA3 Logo"
@@ -104,10 +109,15 @@ export default function HomePage() {
                     </a>
                   </GlimpseTrigger>
                   <GlimpseContent>
-                    <GlimpseImage src="/screenshots/aa3.png" alt="AA3 Website Screenshot" />
+                    <GlimpseImage
+                      src="/screenshots/aa3.png"
+                      alt="AA3 Website Screenshot"
+                    />
                     <GlimpseTitle>AA3 - My Portfolio Website</GlimpseTitle>
                     <GlimpseDescription>
-                      My personal portfolio website that showcases my projects, skills, and experience in software development and AI applications.
+                      My personal portfolio website that showcases my projects,
+                      skills, and experience in software development and AI
+                      applications.
                     </GlimpseDescription>
                   </GlimpseContent>
                 </Glimpse>
@@ -115,10 +125,16 @@ export default function HomePage() {
 
               <div className="text-lg md:text-xl text-white space-y-2">
                 <p className="flex items-center flex-wrap gap-2">
-                  Built using <Glimpse>
+                  Built using{" "}
+                  <Glimpse>
                     <GlimpseTrigger asChild>
-                    <a href="https://nextjs.org" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:opacity-80 transition-opacity underline decoration-white/60 hover:decoration-white">
-                      <span>Next.js</span>
+                      <a
+                        href="https://nextjs.org"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 hover:opacity-80 transition-opacity underline decoration-white/60 hover:decoration-white"
+                      >
+                        <span>Next.js</span>
                         <Image
                           src="/nextjs-icon.svg"
                           alt="Next.js"
@@ -129,76 +145,114 @@ export default function HomePage() {
                       </a>
                     </GlimpseTrigger>
                     <GlimpseContent>
-                      <GlimpseImage src="/screenshots/nextjs.png" alt="Next.js Website Screenshot" />
+                      <GlimpseImage
+                        src="/screenshots/nextjs.png"
+                        alt="Next.js Website Screenshot"
+                      />
                       <GlimpseTitle>Next.js - The React Framework</GlimpseTitle>
                       <GlimpseDescription>
-                        Next.js is a React framework that gives you building blocks to create web applications with server-side rendering, static site generation, and more.
+                        Next.js is a React framework that gives you building
+                        blocks to create web applications with server-side
+                        rendering, static site generation, and more.
                       </GlimpseDescription>
                     </GlimpseContent>
                   </Glimpse>
                   <span className="text-[#948979] text-sm">(frontend)</span>,{" "}
-                   <Glimpse>
-                     <GlimpseTrigger asChild>
-                       <a href="https://yjs.dev" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:opacity-80 transition-opacity underline decoration-white/60 hover:decoration-white">
-                         <span>Yjs</span>
-                         <Image
-                           src="/yjs-icon.svg"
-                           alt="Yjs"
-                           width={28}
-                           height={28}
-                           className="w-7 h-7 align-middle"
-                         />
-                       </a>
-                     </GlimpseTrigger>
-                     <GlimpseContent>
-                       <GlimpseImage src="/screenshots/yjs.png" alt="Yjs Website Screenshot" />
-                       <GlimpseTitle>Yjs - Shared Data Types</GlimpseTitle>
-                       <GlimpseDescription>
-                         Yjs is a CRDT implementation that exposes its internal data structure as shared types for building collaborative applications.
-                       </GlimpseDescription>
-                     </GlimpseContent>
-                   </Glimpse>
+                  <Glimpse>
+                    <GlimpseTrigger asChild>
+                      <a
+                        href="https://yjs.dev"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 hover:opacity-80 transition-opacity underline decoration-white/60 hover:decoration-white"
+                      >
+                        <span>Yjs</span>
+                        <Image
+                          src="/yjs-icon.svg"
+                          alt="Yjs"
+                          width={28}
+                          height={28}
+                          className="w-7 h-7 align-middle"
+                        />
+                      </a>
+                    </GlimpseTrigger>
+                    <GlimpseContent>
+                      <GlimpseImage
+                        src="/screenshots/yjs.png"
+                        alt="Yjs Website Screenshot"
+                      />
+                      <GlimpseTitle>Yjs - Shared Data Types</GlimpseTitle>
+                      <GlimpseDescription>
+                        Yjs is a CRDT implementation that exposes its internal
+                        data structure as shared types for building
+                        collaborative applications.
+                      </GlimpseDescription>
+                    </GlimpseContent>
+                  </Glimpse>
                   <span className="text-[#948979] text-sm">
-                     (synchronization)
-                   </span>
-                   ,{" "}
-                   <Glimpse>
-                     <GlimpseTrigger asChild>
-                       <a href="https://partykit.io" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:opacity-80 transition-opacity underline decoration-white/60 hover:decoration-white">
-                         <span>PartyKit</span>
-                         <Image
-                           src="/partykit-icon.svg"
-                           alt="PartyKit"
-                           width={28}
-                           height={28}
-                           className="w-7 h-7 align-middle"
-                         />
-                       </a>
-                     </GlimpseTrigger>
-                     <GlimpseContent>
-                       <GlimpseImage src="/screenshots/partykit.png" alt="PartyKit Website Screenshot" />
-                       <GlimpseTitle>PartyKit - Real-time Backend</GlimpseTitle>
-                       <GlimpseDescription>
-                         PartyKit is a platform for building real-time collaborative applications with WebSockets, providing scalable multiplayer infrastructure.
-                       </GlimpseDescription>
-                     </GlimpseContent>
-                   </Glimpse>
+                    (synchronization)
+                  </span>
+                  ,{" "}
+                  <Glimpse>
+                    <GlimpseTrigger asChild>
+                      <a
+                        href="https://partykit.io"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 hover:opacity-80 transition-opacity underline decoration-white/60 hover:decoration-white"
+                      >
+                        <span>PartyKit</span>
+                        <Image
+                          src="/partykit-icon.svg"
+                          alt="PartyKit"
+                          width={28}
+                          height={28}
+                          className="w-7 h-7 align-middle"
+                        />
+                      </a>
+                    </GlimpseTrigger>
+                    <GlimpseContent>
+                      <GlimpseImage
+                        src="/screenshots/partykit.png"
+                        alt="PartyKit Website Screenshot"
+                      />
+                      <GlimpseTitle>PartyKit - Real-time Backend</GlimpseTitle>
+                      <GlimpseDescription>
+                        PartyKit is a platform for building real-time
+                        collaborative applications with WebSockets, providing
+                        scalable multiplayer infrastructure.
+                      </GlimpseDescription>
+                    </GlimpseContent>
+                  </Glimpse>
                   <span className="text-[#948979] text-sm">(backend)</span>, and
-                   it is -{" "}
-                   <Glimpse>
-                     <GlimpseTrigger asChild>
-                       <a href="https://microsoft.github.io/monaco-editor/" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity underline decoration-white/60 hover:decoration-white">
-                         <strong>Powered by Monaco Editor</strong>
-                       </a>
-                     </GlimpseTrigger>
-                     <GlimpseContent>
-                       <GlimpseImage src="/screenshots/monaco.png" alt="Monaco Editor Website Screenshot" />
-                       <GlimpseTitle>Monaco Editor - VS Code's Editor</GlimpseTitle>
-                       <GlimpseDescription>
-                         Monaco Editor is the code editor that powers VS Code, offering rich IntelliSense, validation, and advanced editing features for the web.
-                       </GlimpseDescription>
-                     </GlimpseContent>
-                   </Glimpse>.
+                  it is -{" "}
+                  <Glimpse>
+                    <GlimpseTrigger asChild>
+                      <a
+                        href="https://microsoft.github.io/monaco-editor/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:opacity-80 transition-opacity underline decoration-white/60 hover:decoration-white"
+                      >
+                        <strong>Powered by Monaco Editor</strong>
+                      </a>
+                    </GlimpseTrigger>
+                    <GlimpseContent>
+                      <GlimpseImage
+                        src="/screenshots/monaco.png"
+                        alt="Monaco Editor Website Screenshot"
+                      />
+                      <GlimpseTitle>
+                        Monaco Editor - VS Code Editor
+                      </GlimpseTitle>
+                      <GlimpseDescription>
+                        Monaco Editor is the code editor that powers VS Code,
+                        offering rich IntelliSense, validation, and advanced
+                        editing features for the web.
+                      </GlimpseDescription>
+                    </GlimpseContent>
+                  </Glimpse>
+                  .
                 </p>
               </div>
             </div>
@@ -308,7 +362,7 @@ export default function HomePage() {
       </div>
 
       {/* Room Code Dialog */}
-      <RoomCodeDialog 
+      <RoomCodeDialog
         isOpen={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         onJoinRoom={handleJoinRoom}
