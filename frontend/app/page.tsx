@@ -4,10 +4,20 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { nanoid } from "nanoid";
 import Image from "next/image";
+import RoomCodeDialog from "@/components/RoomCodeDialog";
+import { 
+  Glimpse, 
+  GlimpseTrigger, 
+  GlimpseContent, 
+  GlimpseTitle, 
+  GlimpseDescription,
+  GlimpseImage
+} from "@/components/kibo-ui/glimpse";
 
 export default function HomePage() {
   const router = useRouter();
   const [roomCode, setRoomCode] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const createNewRoom = () => {
     router.push(`/editor/${nanoid(10)}`);
@@ -18,11 +28,18 @@ export default function HomePage() {
     if (roomCode.trim()) router.push(`/editor/${roomCode.trim()}`);
   };
 
+  const handleJoinRoom = (code: string) => {
+    router.push(`/editor/${code}`);
+  };
+
   return (
     <main className="min-h-screen bg-[#222831] relative overflow-hidden">
       {/* Decorative Blobs */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-[#DFD0B8] rounded-full opacity-10 blur-3xl -translate-y-1/2 translate-x-1/2 -z-10" />
       <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#DFD0B8] rounded-full opacity-10 blur-3xl translate-y-1/2 -translate-x-1/2 -z-10" />
+
+      {/* Background for right side with #393E46 extending until footer */}
+      <div className="absolute top-0 right-0 w-1/2 h-full bg-[#393E46] z-0 rounded-l-3xl"></div>
 
       <div className="relative z-10 container mx-auto px-6 md:px-12 py-8">
         {/* Header: Logo left, GitHub right */}
@@ -32,14 +49,14 @@ export default function HomePage() {
             <Image
               src="/logo.svg"
               alt="Coil Code Logo"
-              width={120}
-              height={120}
-              className="w-15 h-15"
+              width={180}
+              height={180}
+              className="w-25 h-25"
             />
           </div>
 
           {/* GitHub button */}
-          <div className="text-right">
+          <div className="text-center">
             <p className="text-[#948979] text-sm mb-2">check it out in</p>
             <a
               href="https://github.com"
@@ -74,88 +91,146 @@ export default function HomePage() {
                   className="inline w-11 h-11 md:w-12 md:h-12 align-middle"
                 />{" "}
                 is a collaborative web code editor made by{" "}
-                <Image
-                  src="/aa3_logo.svg"
-                  alt="AA3 Logo"
-                  width={50}
-                  height={38}
-                  className="inline w-11 h-10 md:w-12 md:h-11 align-middle"
-                />
+                <Glimpse>
+                  <GlimpseTrigger asChild>
+                    <a href="https://aa3.site" target="_blank" rel="noopener noreferrer" className="inline-block">
+                      <Image
+                        src="/aa3_logo.svg"
+                        alt="AA3 Logo"
+                        width={50}
+                        height={38}
+                        className="inline w-11 h-10 md:w-12 md:h-11 align-middle hover:opacity-80 transition-opacity"
+                      />
+                    </a>
+                  </GlimpseTrigger>
+                  <GlimpseContent>
+                    <GlimpseImage src="/screenshots/aa3.png" alt="AA3 Website Screenshot" />
+                    <GlimpseTitle>AA3 - My Portfolio Website</GlimpseTitle>
+                    <GlimpseDescription>
+                      My personal portfolio website that showcases my projects, skills, and experience in software development and AI applications.
+                    </GlimpseDescription>
+                  </GlimpseContent>
+                </Glimpse>
               </h1>
 
               <div className="text-lg md:text-xl text-white space-y-2">
                 <p className="flex items-center flex-wrap gap-2">
-                  Built using Next.js{" "}
-                  <Image
-                    src="/nextjs-icon.svg"
-                    alt="Next.js"
-                    width={28}
-                    height={28}
-                    className="w-7 h-7 align-middle"
-                  />
-                  <span className="text-[#948979] text-sm">(frontend)</span>,
-                  Yjs{" "}
-                  <Image
-                    src="/yjs-icon.svg"
-                    alt="Yjs"
-                    width={28}
-                    height={28}
-                    className="w-7 h-7 align-middle"
-                  />
+                  Built using <Glimpse>
+                    <GlimpseTrigger asChild>
+                    <a href="https://nextjs.org" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:opacity-80 transition-opacity underline decoration-white/60 hover:decoration-white">
+                      <span>Next.js</span>
+                        <Image
+                          src="/nextjs-icon.svg"
+                          alt="Next.js"
+                          width={28}
+                          height={28}
+                          className="w-7 h-7 align-middle"
+                        />
+                      </a>
+                    </GlimpseTrigger>
+                    <GlimpseContent>
+                      <GlimpseImage src="/screenshots/nextjs.png" alt="Next.js Website Screenshot" />
+                      <GlimpseTitle>Next.js - The React Framework</GlimpseTitle>
+                      <GlimpseDescription>
+                        Next.js is a React framework that gives you building blocks to create web applications with server-side rendering, static site generation, and more.
+                      </GlimpseDescription>
+                    </GlimpseContent>
+                  </Glimpse>
+                  <span className="text-[#948979] text-sm">(frontend)</span>,{" "}
+                   <Glimpse>
+                     <GlimpseTrigger asChild>
+                       <a href="https://yjs.dev" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:opacity-80 transition-opacity underline decoration-white/60 hover:decoration-white">
+                         <span>Yjs</span>
+                         <Image
+                           src="/yjs-icon.svg"
+                           alt="Yjs"
+                           width={28}
+                           height={28}
+                           className="w-7 h-7 align-middle"
+                         />
+                       </a>
+                     </GlimpseTrigger>
+                     <GlimpseContent>
+                       <GlimpseImage src="/screenshots/yjs.png" alt="Yjs Website Screenshot" />
+                       <GlimpseTitle>Yjs - Shared Data Types</GlimpseTitle>
+                       <GlimpseDescription>
+                         Yjs is a CRDT implementation that exposes its internal data structure as shared types for building collaborative applications.
+                       </GlimpseDescription>
+                     </GlimpseContent>
+                   </Glimpse>
                   <span className="text-[#948979] text-sm">
-                    (synchronization)
-                  </span>
-                  , PartyKit{" "}
-                  <Image
-                    src="/partykit-icon.svg"
-                    alt="PartyKit"
-                    width={28}
-                    height={28}
-                    className="w-7 h-7 align-middle"
-                  />
+                     (synchronization)
+                   </span>
+                   ,{" "}
+                   <Glimpse>
+                     <GlimpseTrigger asChild>
+                       <a href="https://partykit.io" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:opacity-80 transition-opacity underline decoration-white/60 hover:decoration-white">
+                         <span>PartyKit</span>
+                         <Image
+                           src="/partykit-icon.svg"
+                           alt="PartyKit"
+                           width={28}
+                           height={28}
+                           className="w-7 h-7 align-middle"
+                         />
+                       </a>
+                     </GlimpseTrigger>
+                     <GlimpseContent>
+                       <GlimpseImage src="/screenshots/partykit.png" alt="PartyKit Website Screenshot" />
+                       <GlimpseTitle>PartyKit - Real-time Backend</GlimpseTitle>
+                       <GlimpseDescription>
+                         PartyKit is a platform for building real-time collaborative applications with WebSockets, providing scalable multiplayer infrastructure.
+                       </GlimpseDescription>
+                     </GlimpseContent>
+                   </Glimpse>
                   <span className="text-[#948979] text-sm">(backend)</span>, and
-                  it is - <strong>Powered by Monaco Editor</strong>.
+                   it is -{" "}
+                   <Glimpse>
+                     <GlimpseTrigger asChild>
+                       <a href="https://microsoft.github.io/monaco-editor/" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity underline decoration-white/60 hover:decoration-white">
+                         <strong>Powered by Monaco Editor</strong>
+                       </a>
+                     </GlimpseTrigger>
+                     <GlimpseContent>
+                       <GlimpseImage src="/screenshots/monaco.png" alt="Monaco Editor Website Screenshot" />
+                       <GlimpseTitle>Monaco Editor - VS Code's Editor</GlimpseTitle>
+                       <GlimpseDescription>
+                         Monaco Editor is the code editor that powers VS Code, offering rich IntelliSense, validation, and advanced editing features for the web.
+                       </GlimpseDescription>
+                     </GlimpseContent>
+                   </Glimpse>.
                 </p>
               </div>
             </div>
 
-            {/* Create Room button */}
-            <button
-              onClick={createNewRoom}
-              className="bg-[#DFD0B8] text-[#222831] px-8 py-2 rounded-xl text-lg font-semibold hover:transform hover:scale-105 hover:shadow-lg transition-all duration-200 flex items-center space-x-2 mt-6"
-            >
-              <span>Create New Room</span>
-              <span>→</span>
-            </button>
-
-            {/* "or" divider */}
-            <div className="flex items-center space-x-4 mt-4">
-              <div className="flex-1 h-px bg-[#948979] opacity-30"></div>
-              <span className="text-[#948979] text-sm">or</span>
-              <div className="flex-1 h-px bg-[#948979] opacity-30"></div>
-            </div>
-
-            {/* Join room input + GO button */}
-            <form onSubmit={joinRoom} className="flex space-x-3 mt-6">
-              <input
-                type="text"
-                placeholder="Enter Room Code"
-                value={roomCode}
-                onChange={(e) => setRoomCode(e.target.value)}
-                className="flex-1 px-4 py-1 rounded-lg bg-white text-[#222831] placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#DFD0B8]"
-              />
+            {/* Action buttons - side by side */}
+            <div className="flex items-center justify-start space-x-4 mt-6">
+              {/* Create Room button */}
               <button
-                type="submit"
-                className="bg-[#948979] text-white px-6 py-1 rounded-lg font-medium hover:bg-opacity-90 transition-all duration-200"
+                onClick={createNewRoom}
+                className="bg-[#DFD0B8] text-[#222831] px-8 py-2 rounded-xl text-lg font-semibold hover:transform hover:scale-105 hover:shadow-lg transition-all duration-200 flex items-center space-x-2 w-fit"
               >
-                GO
+                <span>Create New Room</span>
+                <span>→</span>
               </button>
-            </form>
+
+              {/* "or" text */}
+              <span className="text-[#948979] text-sm font-medium">or</span>
+
+              {/* Join room button */}
+              <button
+                onClick={() => setIsDialogOpen(true)}
+                className="bg-[#948979] text-white px-8 py-2 rounded-xl text-lg font-semibold hover:bg-opacity-90 transition-all duration-200 flex items-center space-x-2 w-fit"
+              >
+                <span>Join Room</span>
+                <span>→</span>
+              </button>
+            </div>
           </div>
 
-          <div className="order-first md:order-last -mt-14 translate-x-26">
+          <div className="order-first md:order-last -mt-8 translate-x-26">
             {/* Video placeholder */}
-            <div className="bg-[#393E46] rounded-xl aspect-4/3 shadow-2xl flex items-center justify-center w-4/5">
+            <div className="bg-[#948979] rounded-xl aspect-4/3 shadow-2xl flex items-center justify-center w-4/5">
               <div className="text-white text-lg font-medium opacity-50">
                 Demo Video Coming Soon
               </div>
@@ -164,9 +239,9 @@ export default function HomePage() {
         </div>
 
         {/* Footer: Copyright left, socials right */}
-        <footer className="mt-24 flex flex-col md:flex-row justify-between items-center gap-4 pt-8 border-t border-[#948979] border-opacity-20">
+        <footer className="mt-16 flex flex-col md:flex-row justify-between items-center gap-4 pt-8">
           {/* Copyright */}
-          <p className="text-[#948979] text-sm">
+          <p className="text-white text-sm">
             © 2025 Coil Code by AA³. All rights reserved
           </p>
 
@@ -176,61 +251,68 @@ export default function HomePage() {
               href="https://github.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#DFD0B8] hover:text-white transition-colors duration-200"
+              className="text-white hover:text-[#DFD0B8] transition-colors duration-200"
             >
               <Image
                 src="/soical_icons/github-142-svgrepo-com.svg"
                 alt="GitHub"
                 width={24}
                 height={24}
-                className="w-6 h-6"
+                className="w-6 h-6 invert"
               />
             </a>
             <a
               href="https://twitter.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#DFD0B8] hover:text-white transition-colors duration-200"
+              className="text-white hover:text-[#DFD0B8] transition-colors duration-200"
             >
               <Image
                 src="/soical_icons/X_logo_2023_original.svg"
                 alt="Twitter"
                 width={24}
                 height={24}
-                className="w-6 h-6"
+                className="w-6 h-6 invert"
               />
             </a>
             <a
               href="https://linkedin.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#DFD0B8] hover:text-white transition-colors duration-200"
+              className="text-white hover:text-[#DFD0B8] transition-colors duration-200"
             >
               <Image
                 src="/soical_icons/linkedin-svgrepo-com.svg"
                 alt="LinkedIn"
                 width={24}
                 height={24}
-                className="w-6 h-6"
+                className="w-6 h-6 invert"
               />
             </a>
             <a
               href="https://instagram.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#DFD0B8] hover:text-white transition-colors duration-200"
+              className="text-white hover:text-[#DFD0B8] transition-colors duration-200"
             >
               <Image
                 src="/soical_icons/instagram-167-svgrepo-com.svg"
                 alt="Instagram"
                 width={24}
                 height={24}
-                className="w-6 h-6"
+                className="w-6 h-6 invert"
               />
             </a>
           </div>
         </footer>
       </div>
+
+      {/* Room Code Dialog */}
+      <RoomCodeDialog 
+        isOpen={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onJoinRoom={handleJoinRoom}
+      />
     </main>
   );
 }
