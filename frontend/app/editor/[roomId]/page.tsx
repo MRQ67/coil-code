@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import CollaborativeEditor from "@/components/editor/CollaborativeEditor";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import {
@@ -15,6 +16,8 @@ import { usePresence } from "@/hooks/usePresence";
 import { useAutoSave } from "@/hooks/useAutoSave";
 import UsernamePrompt from "@/components/UsernamePrompt";
 import UserListTooltip from "@/components/editor/UserListTooltip";
+import { useQuery } from 'convex/react';
+import { api } from '@/convex/_generated/api';
 
 export default function EditorPage() {
   const params = useParams();
@@ -24,7 +27,12 @@ export default function EditorPage() {
     useState<CollaborativeDoc | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
   const isInitializing = useRef(false);
+  const initialContentLoadedRef = useRef(false);
+
+  // Get room data from Convex
+  const roomData = useQuery(api.rooms.getRoom, { roomId: roomId || '' });
 
   // Get user info
   const {
@@ -91,74 +99,39 @@ export default function EditorPage() {
     };
   }, [roomId, userInfo, isLoadingUser]);
 
-  // Load room content only once after initial connection
+  // Load room content from Convex only once after initial connection
   useEffect(() => {
-    if (!collaborativeDoc || !roomId || !isConnected) return;
+    if (!collaborativeDoc || !roomId || !isConnected || initialContentLoadedRef.current) return;
 
-    let isCancelled = false;
-
-    const load = async () => {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
-
-        const res = await fetch(`/api/rooms/${roomId}`, {
-          signal: controller.signal
-        });
+    // Check if roomData is loaded
+    if (roomData !== undefined) {
+      if (roomData && roomData.content) {
+        // Normalize line endings to prevent cross-platform issues
+        const normalizedContent = roomData.content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
         
-        clearTimeout(timeoutId);
-
-        if (isCancelled) return;
-
-        if (res.ok) {
-          const data = await res.json();
-          if (data.content !== undefined) {
-            // Normalize line endings to prevent cross-platform issues
-            const normalizedContent = data.content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-            
-            // Temporarily disconnect to prevent conflicts during initial content load
-            collaborativeDoc.provider.disconnect();
-            
-            // Clear the current content and insert the loaded content
-            collaborativeDoc.ytext.delete(0, collaborativeDoc.ytext.length);
-            collaborativeDoc.ytext.insert(0, normalizedContent);
-            
-            // Reconnect to resume synchronization
-            collaborativeDoc.provider.connect();
-          }
-        } else if (res.status === 408) { // Request timeout
-          console.warn('⚠️ Load timeout:', new Date().toLocaleTimeString());
-        } else {
-          console.error('❌ Load failed with status:', res.status);
-        }
-      } catch (error) {
-        const err = error as { name?: string; message?: string } | Error | unknown;
-        if (err && typeof err === 'object' && 'name' in err && (err as { name: string }).name === 'AbortError') {
-          console.warn('⚠️ Load timeout:', new Date().toLocaleTimeString());
-        } else {
-          console.error('❌ Load failed:', error);
-        }
-      } finally {
-        if (!isCancelled) {
-          setIsLoading(false);
-        }
+        // Apply content to Yjs document without disconnecting
+        // Create a Yjs transaction to update the document
+        collaborativeDoc.ydoc.transact(() => {
+          // Clear the current content and insert the loaded content
+          collaborativeDoc.ytext.delete(0, collaborativeDoc.ytext.length);
+          collaborativeDoc.ytext.insert(0, normalizedContent);
+        });
       }
-    };
+      initialContentLoadedRef.current = true;
+      // Set the state only once when initial content is loaded
+      setTimeout(() => {
+        setInitialDataLoaded(true);
+        setIsLoading(false);
+      }, 0);
+    }
+  }, [collaborativeDoc, roomId, isConnected, roomData]);
 
-    // Add a small delay to ensure the provider is fully connected before loading
-    const timer = setTimeout(load, 100);
-
-    return () => {
-      isCancelled = true;
-      clearTimeout(timer);
-    };
-  }, [collaborativeDoc, roomId, isConnected]);
-
-  // Auto-save
+  // Auto-save - save to Convex periodically and when leaving
   useAutoSave({
     roomId: roomId || '',
     content: () => collaborativeDoc?.ytext.toString() || '',
     username: userInfo?.username || '',
+    language: 'javascript',
   });
 
   // Handle username save from modal
@@ -185,12 +158,12 @@ export default function EditorPage() {
             Invalid Room
           </h2>
           <p className="text-gray-300">The room ID is invalid or missing.</p>
-          <a
+          <Link
             href="/"
             className="mt-4 inline-block rounded-lg bg-blue-600 px-6 py-2 text-white transition-colors hover:bg-blue-700"
           >
             Back to Home
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -227,8 +200,8 @@ export default function EditorPage() {
     );
   }
 
-  // Loading state
-  if (!isConnected || !collaborativeDoc || isLoading) {
+  // Loading state - waiting for Convex data
+  if (!isConnected || !collaborativeDoc || isLoading || (!initialDataLoaded && roomData === undefined)) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-gray-900">
         <div className="text-center">
@@ -291,12 +264,12 @@ export default function EditorPage() {
             </button>
 
             {/* Leave Room Button */}
-            <a
+            <Link
               href="/"
               className="rounded-lg bg-gray-700 px-4 py-2 text-sm text-white transition-colors hover:bg-gray-600"
             >
               Leave Room
-            </a>
+            </Link>
           </div>
         </header>
 
