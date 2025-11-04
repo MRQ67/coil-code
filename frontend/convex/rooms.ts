@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
-// Save or update room
+// Save or update room with race condition handling
 export const saveRoom = mutation({
   args: {
     roomId: v.string(),
@@ -9,26 +9,27 @@ export const saveRoom = mutation({
     language: v.string(),
     username: v.string(),
   },
+  returns: v.object({ success: v.boolean() }),
   handler: async (ctx, args) => {
-    // Try to update an existing room first
-    const existing = await ctx.db
-      .query("rooms")
-      .withIndex("by_roomId", (q) => q.eq("roomId", args.roomId))
-      .first();
-      
-    if (existing) {
-      // Update the existing room
-      await ctx.db.patch(existing._id, {
-        content: args.content,
-        language: args.language,
-        lastEditedBy: args.username,
-        lastEditedAt: Date.now(),
-      });
-    } else {
-      // Try to insert a new room
-      // If another request created the room in the meantime, the insert will fail
-      // In that case, we'll catch the error and update instead
-      try {
+    try {
+      // Attempt to fetch the room with the given roomId
+      const existing = await ctx.db
+        .query("rooms")
+        .withIndex("by_roomId", (q) => q.eq("roomId", args.roomId))
+        .first();
+        
+      if (existing) {
+        // Update the existing room
+        await ctx.db.patch(existing._id, {
+          content: args.content,
+          language: args.language,
+          lastEditedBy: args.username,
+          lastEditedAt: Date.now(),
+        });
+      } else {
+        // Try to insert a new room
+        // If another request creates the room before this one completes, 
+        // the insert will fail but Convex will handle retries appropriately
         await ctx.db.insert("rooms", {
           roomId: args.roomId,
           content: args.content,
@@ -36,48 +37,76 @@ export const saveRoom = mutation({
           lastEditedBy: args.username,
           lastEditedAt: Date.now(),
         });
-      } catch (e) {
-        // If the insert failed because another request created the room, 
-        // try updating the existing room
-        const room = await ctx.db
+      }
+      
+      return { success: true };
+    } catch (error) {
+      // If we get a unique constraint error, it likely means another 
+      // request created the same room, so we should update instead
+      if (error instanceof Error && 
+          (error.message.includes('unique') || error.message.includes('duplicate'))) {
+        // Try to find and update the existing room
+        const retryRoom = await ctx.db
           .query("rooms")
           .withIndex("by_roomId", (q) => q.eq("roomId", args.roomId))
           .first();
           
-        if (room) {
-          await ctx.db.patch(room._id, {
+        if (retryRoom) {
+          await ctx.db.patch(retryRoom._id, {
             content: args.content,
             language: args.language,
             lastEditedBy: args.username,
             lastEditedAt: Date.now(),
           });
-        } else {
-          // This shouldn't happen - but if it does, throw an error
-          throw new Error(`Could not find or create room with ID: ${args.roomId}`);
+          return { success: true };
         }
       }
+      
+      // Re-throw if it's a different error
+      throw error;
     }
-    
-    return { success: true };
   },
 });
 
 // Get room by ID
 export const getRoom = query({
-  args: { roomId: v.string() },
+  args: { 
+    roomId: v.string() 
+  },
+  returns: v.union(
+    v.object({
+      _id: v.id("rooms"),
+      _creationTime: v.number(), // System field that's automatically added
+      roomId: v.string(),
+      content: v.string(),
+      language: v.string(),
+      lastEditedBy: v.string(),
+      lastEditedAt: v.number(),
+    }),
+    v.null()
+  ),
   handler: async (ctx, args) => {
     const room = await ctx.db
       .query("rooms")
       .withIndex("by_roomId", (q) => q.eq("roomId", args.roomId))
       .first();
     
-    return room || null;
+    return room;
   },
 });
 
 // Get all rooms (for future "My Rooms" feature)
 export const getAllRooms = query({
   args: {},
+  returns: v.array(v.object({
+    _id: v.id("rooms"),
+    _creationTime: v.number(), // System field that's automatically added
+    roomId: v.string(),
+    content: v.string(),
+    language: v.string(),
+    lastEditedBy: v.string(),
+    lastEditedAt: v.number(),
+  })),
   handler: async (ctx) => {
     return await ctx.db
       .query("rooms")

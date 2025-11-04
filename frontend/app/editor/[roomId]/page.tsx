@@ -126,7 +126,7 @@ export default function EditorPage() {
     }
   }, [collaborativeDoc, roomId, isConnected, roomData]);
 
-  // Auto-save
+  // Auto-save - save to Convex periodically and when leaving
   useAutoSave({
     roomId: roomId || '',
     content: () => collaborativeDoc?.ytext.toString() || '',
