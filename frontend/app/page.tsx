@@ -59,7 +59,7 @@ export default function HomePage() {
           <div className="text-center">
             <p className="text-[#948979] text-sm mb-2">check it out in</p>
             <a
-              href="https://github.com"
+              href="https://github.com/MRQ67/coil-code"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center space-x-2 bg-[#DFD0B8] text-[#222831] px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-all duration-200"
@@ -302,7 +302,7 @@ export default function HomePage() {
           {/* Social icons */}
           <div className="flex items-center space-x-6">
             <a
-              href="https://github.com"
+              href="https://github.com/MRQ67"
               target="_blank"
               rel="noopener noreferrer"
               className="text-white hover:text-[#DFD0B8] transition-colors duration-200"
@@ -316,7 +316,7 @@ export default function HomePage() {
               />
             </a>
             <a
-              href="https://twitter.com"
+              href="https://x.com/HimoNotting"
               target="_blank"
               rel="noopener noreferrer"
               className="text-white hover:text-[#DFD0B8] transition-colors duration-200"
@@ -330,7 +330,7 @@ export default function HomePage() {
               />
             </a>
             <a
-              href="https://linkedin.com"
+              href="https://www.linkedin.com/in/abdellah-qadi-b229382a2/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-white hover:text-[#DFD0B8] transition-colors duration-200"
@@ -344,7 +344,7 @@ export default function HomePage() {
               />
             </a>
             <a
-              href="https://instagram.com"
+              href="https://www.instagram.com/simply_aboo/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-white hover:text-[#DFD0B8] transition-colors duration-200"
