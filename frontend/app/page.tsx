@@ -274,7 +274,7 @@ export default function HomePage() {
               {/* Join room button */}
               <button
                 onClick={() => setIsDialogOpen(true)}
-                className="bg-[#948979] text-white px-8 py-2 rounded-xl text-lg font-semibold hover:bg-opacity-90 transition-all duration-200 flex items-center space-x-2 w-fit"
+                className="bg-[#948979] text-white px-8 py-2 rounded-xl text-lg font-semibold hover:transform hover:scale-105 hover:shadow-lg transition-all duration-200 flex items-center space-x-2 w-fit"
               >
                 <span>Join Room</span>
                 <span>→</span>
