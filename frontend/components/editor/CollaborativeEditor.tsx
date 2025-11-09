@@ -107,12 +107,60 @@ export default function CollaborativeEditor({
           },
         ]) => {
           // Create MonacoBinding - THIS IS CRITICAL FOR CURSORS
+          // The MonacoBinding properly manages multi-user cursors via the awareness protocol
+          // Each user's cursor position is tracked independently while sharing the same document
           bindingRef.current = new MonacoBinding(
             ytext,
             model,
             new Set([editor]),
-            provider.awareness, // This enables cursor sync
+            provider.awareness, // This enables cursor sync between users
           );
+
+          // Add custom cursor position handling to prevent interference between users
+          // when cursors are at the same position
+          const handleCursorChange = (e: any) => {
+            // Ensure that local cursor changes don't interfere with remote cursors
+            if (provider.awareness && editor) {
+              const selection = editor.getSelection();
+              if (selection) {
+                // Update only the local user's cursor position in awareness
+                // This helps maintain independence between user cursors
+                const localState = provider.awareness.getLocalState();
+                if (localState) {
+                  provider.awareness.setLocalStateField("cursor", {
+                    ...localState.cursor,
+                    position: {
+                      lineNumber: selection.positionLineNumber,
+                      column: selection.positionColumn,
+                    },
+                    selectionStart: {
+                      lineNumber: selection.selectionStartLineNumber,
+                      column: selection.selectionStartColumn,
+                    },
+                  });
+                }
+              }
+            }
+          };
+
+          // Subscribe to cursor position changes
+          const cursorChangeListener = editor.onDidChangeCursorPosition(handleCursorChange);
+
+          // Cleanup function for cursor change listener
+          const cleanupCursorListener = () => {
+            cursorChangeListener?.dispose();
+          };
+
+          // Store reference to cleanup function
+          if (!cursorCleanupRef.current) {
+            cursorCleanupRef.current = cleanupCursorListener;
+          } else {
+            const oldCleanup = cursorCleanupRef.current;
+            cursorCleanupRef.current = () => {
+              oldCleanup();
+              cleanupCursorListener();
+            };
+          }
 
           // Expose debug functions globally for console access
           if (typeof window !== "undefined") {
