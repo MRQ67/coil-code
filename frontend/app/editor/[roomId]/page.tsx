@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import CollaborativeEditor from "@/components/editor/CollaborativeEditor";
+import EditorLayout from "@/components/editor/EditorLayout";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import {
   createCollaborativeDoc,
@@ -105,16 +105,24 @@ export default function EditorPage() {
 
     // Check if roomData is loaded
     if (roomData !== undefined) {
-      if (roomData && roomData.content) {
-        // Normalize line endings to prevent cross-platform issues
-        const normalizedContent = roomData.content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-        
+      if (roomData) {
         // Apply content to Yjs document without disconnecting
-        // Create a Yjs transaction to update the document
+        // Create a Yjs transaction to update the documents
         collaborativeDoc.ydoc.transact(() => {
-          // Clear the current content and insert the loaded content
-          collaborativeDoc.ytext.delete(0, collaborativeDoc.ytext.length);
-          collaborativeDoc.ytext.insert(0, normalizedContent);
+          // Set HTML content
+          const yhtmlText = collaborativeDoc.ydoc.getText('html');
+          yhtmlText.delete(0, yhtmlText.length);
+          yhtmlText.insert(0, roomData.htmlContent || '<!-- Start coding HTML here -->');
+
+          // Set CSS content
+          const ycssText = collaborativeDoc.ydoc.getText('css');
+          ycssText.delete(0, ycssText.length);
+          ycssText.insert(0, roomData.cssContent || '/* Start coding CSS here */');
+
+          // Set JS content
+          const yjsText = collaborativeDoc.ydoc.getText('js');
+          yjsText.delete(0, yjsText.length);
+          yjsText.insert(0, roomData.jsContent || '// Start coding JavaScript here');
         });
       }
       initialContentLoadedRef.current = true;
@@ -129,9 +137,10 @@ export default function EditorPage() {
   // Auto-save - save to Convex periodically and when leaving
   useAutoSave({
     roomId: roomId || '',
-    content: () => collaborativeDoc?.ytext.toString() || '',
+    htmlContent: () => collaborativeDoc?.ydoc.getText('html').toString() || '',
+    cssContent: () => collaborativeDoc?.ydoc.getText('css').toString() || '',
+    jsContent: () => collaborativeDoc?.ydoc.getText('js').toString() || '',
     username: userInfo?.username || '',
-    language: 'javascript',
   });
 
   // Handle username save from modal
@@ -216,9 +225,9 @@ export default function EditorPage() {
   // Editor state
   return (
     <ErrorBoundary>
-      <div className="flex h-screen w-full flex-col bg-gray-900">
+      <div className="flex h-screen w-full flex-col bg-[#1E1E1E]">
         {/* Header */}
-        <header className="flex items-center justify-between border-b border-gray-700 bg-gray-800 px-6 py-3">
+        <header className="flex items-center justify-between border-b border-[#3C3C3C] bg-[#2D2D30] px-6 py-3">
           <div className="flex items-center space-x-4">
             <h1 className="text-lg font-semibold text-white">
               Coil Code Editor
@@ -236,7 +245,7 @@ export default function EditorPage() {
             <UserListTooltip users={users} maxVisible={5} />
 
             {/* User Count Badge */}
-            <div className="rounded-lg bg-gray-700/50 px-3 py-2">
+            <div className="rounded-lg bg-[#252526] px-3 py-2">
               <span className="text-sm text-gray-400">
                 {userCount} {userCount === 1 ? "user" : "users"} online
               </span>
@@ -245,7 +254,7 @@ export default function EditorPage() {
             {/* Edit Profile Button */}
             <button
               onClick={() => setShowEditModal(true)}
-              className="rounded-lg bg-gray-700 px-3 py-2 text-sm text-white transition-colors hover:bg-gray-600"
+              className="rounded-lg bg-[#252526] px-3 py-2 text-sm text-white transition-colors hover:bg-gray-600"
               title="Change your profile"
             >
               <svg
@@ -266,7 +275,7 @@ export default function EditorPage() {
             {/* Leave Room Button */}
             <Link
               href="/"
-              className="rounded-lg bg-gray-700 px-4 py-2 text-sm text-white transition-colors hover:bg-gray-600"
+              className="rounded-lg bg-[#252526] px-4 py-2 text-sm text-white transition-colors hover:bg-gray-600"
             >
               Leave Room
             </Link>
@@ -282,14 +291,16 @@ export default function EditorPage() {
           defaultGender={userInfo.gender}
         />
 
-        {/* Editor */}
+        {/* Multi-file Editor Layout */}
         <main className="flex-1 overflow-hidden">
-          <CollaborativeEditor
+          <EditorLayout
             ydoc={collaborativeDoc.ydoc}
-            ytext={collaborativeDoc.ytext}
             provider={collaborativeDoc.provider}
             username={userInfo.username}
             gender={userInfo.gender}
+            initialHtmlContent={roomData?.htmlContent || '<!-- Start coding HTML here -->'}
+            initialCssContent={roomData?.cssContent || '/* Start coding CSS here */'}
+            initialJsContent={roomData?.jsContent || '// Start coding JavaScript here'}
           />
         </main>
       </div>
