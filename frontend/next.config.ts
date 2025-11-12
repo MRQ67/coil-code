@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
 
 const nextConfig: NextConfig = {
   turbopack: {
@@ -18,17 +19,27 @@ const nextConfig: NextConfig = {
 
     // Monaco Editor configuration
     if (!isServer) {
-      config.externals = {
-        ...config.externals,
-        "monaco-editor": "monaco-editor",
-      };
-
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
         path: false,
         crypto: false,
       };
+
+      // Ensure plugins array exists
+      if (!config.plugins) {
+        config.plugins = [];
+      }
+
+      // Add Monaco Editor webpack plugin
+      config.plugins.push(
+        new MonacoWebpackPlugin({
+          languages: ["html", "css", "javascript", "typescript", "json"],
+          // Configure publicPath to match where workers are requested
+          // Workers are requested at /_next/css.worker.js etc.
+          publicPath: "/_next/",
+        })
+      );
     }
 
     return config;

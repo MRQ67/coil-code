@@ -1,5 +1,18 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
+
+// Define Room type
+interface Room {
+  _id: Id<"rooms">;
+  _creationTime: number; // System field that's automatically added
+  roomId: string;
+  htmlContent?: string;
+  cssContent?: string;
+  jsContent?: string;
+  lastEditedBy: string;
+  lastEditedAt: number;
+}
 
 // Save or update room with race condition handling
 export const saveRoom = mutation({
@@ -13,7 +26,7 @@ export const saveRoom = mutation({
   handler: async (ctx, args) => {
     try {
       // Determine which content field to update based on the language
-      let contentField = 'jsContent';
+      let contentField: 'jsContent' | 'cssContent' | 'htmlContent' = 'jsContent';
       if (args.language === 'css') {
         contentField = 'cssContent';
       } else if (args.language === 'html') {
@@ -28,7 +41,7 @@ export const saveRoom = mutation({
 
       if (existing) {
         // Update the existing room, setting the appropriate content field
-        const updateData: any = {
+        const updateData: Partial<Room> = {
           [contentField]: args.content,
           lastEditedBy: args.username,
           lastEditedAt: Date.now(),
@@ -38,7 +51,7 @@ export const saveRoom = mutation({
         // Try to insert a new room
         // If another request creates the room before this one completes,
         // the insert will fail but Convex will handle retries appropriately
-        const insertData: any = {
+        const insertData: Omit<Room, '_id' | '_creationTime'> = {
           roomId: args.roomId,
           [contentField]: args.content,
           lastEditedBy: args.username,
@@ -55,7 +68,7 @@ export const saveRoom = mutation({
       return { success: true };
     } catch (error) {
       // Determine which content field to update based on the language (for error handling)
-      let contentField = 'jsContent';
+      let contentField: 'jsContent' | 'cssContent' | 'htmlContent' = 'jsContent';
       if (args.language === 'css') {
         contentField = 'cssContent';
       } else if (args.language === 'html') {
@@ -73,7 +86,7 @@ export const saveRoom = mutation({
           .first();
 
         if (retryRoom) {
-          const updateData: any = {
+          const updateData: Partial<Room> = {
             [contentField]: args.content,
             lastEditedBy: args.username,
             lastEditedAt: Date.now(),
@@ -113,7 +126,7 @@ export const getRoom = query({
     const room = await ctx.db
       .query("rooms")
       .withIndex("by_roomId", (q) => q.eq("roomId", args.roomId))
-      .first();
+      .first() as Room | null;
 
     return room;
   },
@@ -133,9 +146,11 @@ export const getAllRooms = query({
     lastEditedAt: v.number(),
   })),
   handler: async (ctx) => {
-    return await ctx.db
+    const rooms = await ctx.db
       .query("rooms")
       .order("desc")
       .take(100);
+    
+    return rooms as Room[];
   },
 });
