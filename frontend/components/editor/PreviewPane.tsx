@@ -27,6 +27,7 @@ const PreviewPane = ({
   const [consoleMessages, setConsoleMessages] = useState<ConsoleMessage[]>([]);
   const [iframeKey, setIframeKey] = useState(0); // For force refresh
   const consoleEndRef = useRef<HTMLDivElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   
   // Debounced preview update
   useEffect(() => {
@@ -40,14 +41,25 @@ const PreviewPane = ({
   // Handle messages from iframe
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
+      // Only process messages from our iframe
+      if (event.source !== iframeRef.current?.contentWindow) {
+        return;
+      }
+
+      // Validate that event.data exists and has the correct structure
+      if (!event.data || typeof event.data !== 'object') {
+        return;
+      }
+
+      // Only process messages with type 'log' or 'error'
       if (event.data.type === 'log') {
         setConsoleMessages(prev => [
-          ...prev, 
+          ...prev,
           { id: Date.now(), type: 'log', data: event.data.data }
         ]);
       } else if (event.data.type === 'error') {
         setConsoleMessages(prev => [
-          ...prev, 
+          ...prev,
           { id: Date.now(), type: 'error', data: [event.data.message] }
         ]);
       }
@@ -151,10 +163,11 @@ const PreviewPane = ({
               <iframe
                 key={iframeKey} // Force reload when key changes
                 srcDoc={bundledCode}
-                sandbox="allow-scripts allow-same-origin"
+                sandbox="allow-scripts"
                 title="Preview"
                 className="w-full h-full bg-white border-0"
                 style={{ minHeight: '300px' }}
+                ref={iframeRef}
               />
             </div>
             

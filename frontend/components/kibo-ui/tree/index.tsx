@@ -214,7 +214,7 @@ export const TreeNode = ({
         parentPath: currentPath,
       }}
     >
-      <div className={cn("select-none", className)} {...props}>
+      <div className={cn("select-none", className)} {...props} onClick={onClick}>
         {children}
       </div>
     </TreeNodeContext.Provider>

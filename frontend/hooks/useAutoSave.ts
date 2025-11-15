@@ -29,80 +29,10 @@ export function useAutoSave({
     js: '',
   });
   const saveRoom = useMutation(api.rooms.saveRoom);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<number | null>(null); // setTimeout returns number in browser environment
 
-  // Memoize the save function to avoid recreating it on every render
-  const save = useCallback(async () => {
-    const currentHtml = htmlContent();
-    const currentCss = cssContent();
-    const currentJs = jsContent();
-
-    // Check if any content has actually changed
-    if (
-      currentHtml === lastSaveRef.current.html &&
-      currentCss === lastSaveRef.current.css &&
-      currentJs === lastSaveRef.current.js
-    ) {
-      return;
-    }
-
-    // Check if changes are significant enough to warrant a save
-    const htmlChange = Math.abs(currentHtml.length - lastSaveRef.current.html.length);
-    const cssChange = Math.abs(currentCss.length - lastSaveRef.current.css.length);
-    const jsChange = Math.abs(currentJs.length - lastSaveRef.current.js.length);
-    
-    const totalChange = htmlChange + cssChange + jsChange;
-    
-    if (totalChange < minChangeThreshold && 
-        lastSaveRef.current.html && 
-        lastSaveRef.current.css && 
-        lastSaveRef.current.js) {
-      // If changes are small, delay the save to batch multiple small changes
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-
-      timeoutRef.current = setTimeout(async () => {
-        try {
-          // Save each content type separately
-          await Promise.all([
-            saveRoom({
-              content: currentHtml,
-              language: 'html',
-              roomId,
-              username,
-            }),
-            saveRoom({
-              content: currentCss,
-              language: 'css',
-              roomId,
-              username,
-            }),
-            saveRoom({
-              content: currentJs,
-              language: 'js',
-              roomId,
-              username,
-            })
-          ]);
-
-          lastSaveRef.current = {
-            html: currentHtml,
-            css: currentCss,
-            js: currentJs,
-          };
-          console.log('✅ Saved:', new Date().toLocaleTimeString(), 
-            'HTML:', currentHtml.length, 
-            'CSS:', currentCss.length, 
-            'JS:', currentJs.length);
-        } catch (error) {
-          console.error('❌ Save failed:', error);
-        }
-      }, 5000); // Wait 5 seconds before saving small changes
-
-      return;
-    }
-
+  // Helper function to perform the actual save
+  const performSave = useCallback(async (currentHtml: string, currentCss: string, currentJs: string) => {
     try {
       // Save each content type separately
       await Promise.all([
@@ -131,14 +61,58 @@ export function useAutoSave({
         css: currentCss,
         js: currentJs,
       };
-      console.log('✅ Saved:', new Date().toLocaleTimeString(), 
-        'HTML:', currentHtml.length, 
-        'CSS:', currentCss.length, 
+      console.log('✅ Saved:', new Date().toLocaleTimeString(),
+        'HTML:', currentHtml.length,
+        'CSS:', currentCss.length,
         'JS:', currentJs.length);
     } catch (error) {
       console.error('❌ Save failed:', error);
     }
-  }, [roomId, htmlContent, cssContent, jsContent, username, saveRoom, minChangeThreshold]);
+  }, [roomId, username, saveRoom]);
+
+  // Memoize the save function to avoid recreating it on every render
+  const save = useCallback(async () => {
+    // Clear any existing timeout to prevent a pending debounced save from overwriting newer content
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null; // Also set to null as requested
+    }
+
+    const currentHtml = htmlContent();
+    const currentCss = cssContent();
+    const currentJs = jsContent();
+
+    // Check if any content has actually changed
+    if (
+      currentHtml === lastSaveRef.current.html &&
+      currentCss === lastSaveRef.current.css &&
+      currentJs === lastSaveRef.current.js
+    ) {
+      return;
+    }
+
+    // Check if changes are significant enough to warrant a save
+    const htmlChange = Math.abs(currentHtml.length - lastSaveRef.current.html.length);
+    const cssChange = Math.abs(currentCss.length - lastSaveRef.current.css.length);
+    const jsChange = Math.abs(currentJs.length - lastSaveRef.current.js.length);
+
+    const totalChange = htmlChange + cssChange + jsChange;
+
+    if (totalChange < minChangeThreshold &&
+        lastSaveRef.current.html &&
+        lastSaveRef.current.css &&
+        lastSaveRef.current.js) {
+      // If changes are small, delay the save to batch multiple small changes
+      timeoutRef.current = setTimeout(async () => {
+        await performSave(currentHtml, currentCss, currentJs);
+      }, 5000); // Wait 5 seconds before saving small changes
+
+      return;
+    }
+
+    // Perform immediate save
+    await performSave(currentHtml, currentCss, currentJs);
+  }, [performSave, roomId, htmlContent, cssContent, jsContent, username, saveRoom, minChangeThreshold]);
 
   useEffect(() => {
     if (!roomId || !username) return;

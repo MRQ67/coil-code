@@ -29,13 +29,14 @@ const EditorLayout = ({
   const [activeFile, setActiveFile] = useState<'html' | 'css' | 'js'>('html');
   const [isFileTreeOpen, setIsFileTreeOpen] = useState(true);
   const [isPreviewOpen, setIsPreviewOpen] = useState(true);
-  
+  const [version, setVersion] = useState(0); // Local state to force re-render on Yjs updates
+
   // Initialize content from ydoc if provided
   useEffect(() => {
     const yhtmlText = ydoc.getText('html');
     const ycssText = ydoc.getText('css');
     const yjsText = ydoc.getText('js');
-    
+
     // Only set initial content if the texts are empty
     if (yhtmlText.length === 0 && initialHtmlContent) {
       yhtmlText.insert(0, initialHtmlContent);
@@ -47,6 +48,29 @@ const EditorLayout = ({
       yjsText.insert(0, initialJsContent);
     }
   }, [ydoc, initialHtmlContent, initialCssContent, initialJsContent]);
+
+  // Subscribe to Yjs updates to force re-render on changes
+  useEffect(() => {
+    const yhtmlText = ydoc.getText('html');
+    const ycssText = ydoc.getText('css');
+    const yjsText = ydoc.getText('js');
+
+    const updateHandler = () => {
+      setVersion(v => v + 1); // Force re-render by updating version
+    };
+
+    // Subscribe to updates on all three text instances
+    yhtmlText.observe(updateHandler);
+    ycssText.observe(updateHandler);
+    yjsText.observe(updateHandler);
+
+    // Cleanup: unobserve when component unmounts or ydoc changes
+    return () => {
+      yhtmlText.unobserve(updateHandler);
+      ycssText.unobserve(updateHandler);
+      yjsText.unobserve(updateHandler);
+    };
+  }, [ydoc]); // Depend only on ydoc to ensure observers are attached once per document
 
   // Get current content
   const getHtmlContent = () => ydoc.getText('html').toString();
@@ -82,7 +106,7 @@ const EditorLayout = ({
         </div>
         
         {/* Preview Pane */}
-        <div className={`${isPreviewOpen ? 'w-[40%]' : 'w-0'} flex flex-col`}>
+        <div className={`${isPreviewOpen ? 'w-[40%]' : 'w-[32px]'} flex flex-col`}>
           <PreviewPane
             htmlContent={getHtmlContent()}
             cssContent={getCssContent()}
