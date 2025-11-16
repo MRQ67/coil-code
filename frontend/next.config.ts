@@ -2,14 +2,7 @@ import type { NextConfig } from "next";
 const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
 
 const nextConfig: NextConfig = {
-  turbopack: {
-    rules: {
-      "*.wasm": {
-        loaders: ["@turbopack/loader-wasm"],
-        as: "*.wasm",
-      },
-    },
-  },
+  turbopack: {}, // Add empty turbopack config to avoid error
   webpack: (config, { isServer }) => {
     // Handle .wasm files
     config.experiments = {
