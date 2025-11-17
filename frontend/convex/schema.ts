@@ -4,8 +4,9 @@ import { v } from "convex/values";
 export default defineSchema({
   rooms: defineTable({
     roomId: v.string(),           // Room ID from URL
-    content: v.string(),          // Editor content
-    language: v.string(),         // Programming language
+    htmlContent: v.optional(v.string()),      // HTML content
+    cssContent: v.optional(v.string()),       // CSS content
+    jsContent: v.optional(v.string()),        // JavaScript content
     lastEditedBy: v.string(),     // Username
     lastEditedAt: v.number(),     // Timestamp (Date.now())
   })

@@ -23,18 +23,25 @@ export class ErrorBoundary extends Component<Props, State> {
     };
   }
 
-  static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error | unknown): State {
+    // Handle both Error objects and other types (like Event objects)
+    const errorObj = error instanceof Error ? error : new Error(String(error));
     return {
       hasError: true,
-      error,
+      error: errorObj,
       errorInfo: null,
     };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("Error caught by boundary:", error, errorInfo);
+  componentDidCatch(error: Error | unknown, errorInfo: ErrorInfo) {
+    // Convert non-Error objects to Error for proper display
+    const errorObj = error instanceof Error 
+      ? error 
+      : new Error(error ? String(error) : 'Unknown error occurred');
+    
+    console.error("Error caught by boundary:", errorObj, errorInfo);
     this.setState({
-      error,
+      error: errorObj,
       errorInfo,
     });
   }
@@ -57,7 +64,17 @@ export class ErrorBoundary extends Component<Props, State> {
               </p>
               {this.state.error && (
                 <div className="rounded bg-gray-800 p-4 font-mono text-sm text-red-300">
-                  <strong>Error:</strong> {this.state.error.toString()}
+                  <strong>Error:</strong> {this.state.error.message || this.state.error.toString()}
+                  {this.state.error.stack && (
+                    <details className="mt-2">
+                      <summary className="cursor-pointer text-xs text-gray-400 hover:text-gray-300">
+                        Stack trace
+                      </summary>
+                      <pre className="mt-2 overflow-auto text-xs text-gray-500">
+                        {this.state.error.stack}
+                      </pre>
+                    </details>
+                  )}
                 </div>
               )}
               {this.state.errorInfo && (

@@ -12,21 +12,36 @@ export interface CollaborativeDoc {
 /**
  * Get the appropriate PartyKit host based on environment
  * Priority: Environment variable > Local network IP > localhost
+ * Returns hostname:port format (y-partykit will handle protocol)
  */
 function getPartykitHost(): string {
+  // Ensure we're in a browser environment
+  if (typeof window === "undefined") {
+    // Fallback for SSR (should not happen, but safety check)
+    return "localhost:1999";
+  }
+
   // Check for environment variable (for production or custom setup)
-  if (typeof window !== "undefined") {
-    const envHost = process.env.NEXT_PUBLIC_PARTYKIT_HOST;
-    if (envHost) {
-      return envHost;
+  const envHost = process.env.NEXT_PUBLIC_PARTYKIT_HOST;
+  if (envHost && envHost.trim() !== "") {
+    // Remove protocol if present (y-partykit handles this)
+    const hostWithoutProtocol = envHost
+      .replace(/^wss?:\/\//, "")
+      .replace(/^https?:\/\//, "")
+      .trim();
+    if (hostWithoutProtocol) {
+      return hostWithoutProtocol;
     }
   }
 
   // For development: try to use local network IP instead of localhost
   // This allows other devices on the same network to connect
+  // Ensure window.location is available and has hostname
   if (
-    typeof window !== "undefined" &&
-    window.location.hostname !== "localhost"
+    window.location &&
+    window.location.hostname &&
+    window.location.hostname !== "localhost" &&
+    window.location.hostname !== "127.0.0.1"
   ) {
     // If accessing via IP (e.g., 192.168.1.x), use that IP with PartyKit port
     return `${window.location.hostname}:1999`;
@@ -42,12 +57,38 @@ function getPartykitHost(): string {
  * @returns Object containing ydoc, ytext, and provider
  */
 export function createCollaborativeDoc(roomId: string): CollaborativeDoc {
-  if (!roomId) {
+  if (!roomId || typeof roomId !== "string" || roomId.trim() === "") {
     throw new Error("roomId is required to create a collaborative document");
   }
 
+  // Ensure we're in a browser environment
+  if (typeof window === "undefined") {
+    throw new Error("createCollaborativeDoc can only be called in a browser environment");
+  }
+
   // Get PartyKit host based on environment
-  const partykitHost = getPartykitHost();
+  let partykitHost = getPartykitHost();
+
+  if (!partykitHost || typeof partykitHost !== "string") {
+    throw new Error("Failed to determine PartyKit host");
+  }
+
+  // Clean and validate the host
+  partykitHost = partykitHost.trim();
+  if (partykitHost === "") {
+    throw new Error("PartyKit host cannot be empty");
+  }
+
+  // Ensure host is in correct format: hostname:port (no protocol, no slashes)
+  // Remove any protocol prefixes that might have been added
+  partykitHost = partykitHost.replace(/^wss?:\/\//, "").replace(/^https?:\/\//, "");
+  // Remove any trailing slashes
+  partykitHost = partykitHost.replace(/\/+$/, "");
+  
+  // Validate format: should be hostname:port or just hostname
+  if (!/^[\w\.-]+(:\d+)?$/.test(partykitHost)) {
+    console.warn(`⚠️ PartyKit host format may be invalid: ${partykitHost}`);
+  }
 
   console.log(`🔌 Connecting to PartyKit at: ${partykitHost}`);
 
@@ -58,15 +99,71 @@ export function createCollaborativeDoc(roomId: string): CollaborativeDoc {
   const ytext = ydoc.getText("content");
 
   // Initialize YPartyKitProvider with the roomId and connect to PartyKit
-  const provider = new YPartyKitProvider(partykitHost, roomId, ydoc, {
-    connect: true, // Connect immediately
-  });
+  // Ensure all parameters are valid
+  try {
+    // Validate that we have all required parameters
+    if (!ydoc) {
+      throw new Error("Yjs document is required");
+    }
+    if (!roomId || roomId.trim() === "") {
+      throw new Error("Room ID is required");
+    }
+    if (!partykitHost || partykitHost.trim() === "") {
+      throw new Error("PartyKit host is required");
+    }
 
-  return {
-    ydoc,
-    ytext,
-    provider,
-  };
+    // Create provider with explicit options
+    // Note: y-partykit expects hostname:port format, not a full URL
+    // The provider will construct the WebSocket URL internally
+    const providerOptions: any = {
+      connect: true, // Connect immediately
+    };
+
+    // Only add party option if we have a specific party configured
+    // Otherwise, y-partykit will use the default "main" party
+    // (This matches the test page which doesn't specify a party)
+
+    // Ensure all parameters are strings and not undefined
+    const host = String(partykitHost);
+    const room = String(roomId);
+
+    if (!host || host === "undefined" || host === "null") {
+      throw new Error(`Invalid PartyKit host: ${host}`);
+    }
+    if (!room || room === "undefined" || room === "null") {
+      throw new Error(`Invalid room ID: ${room}`);
+    }
+
+    // Create the provider - y-partykit will handle URL construction internally
+    const provider = new YPartyKitProvider(host, room, ydoc, providerOptions);
+
+    if (!provider) {
+      throw new Error("Failed to create YPartyKitProvider - provider is null");
+    }
+
+    // Verify provider has required properties
+    if (typeof provider.connect !== "function" && providerOptions.connect) {
+      console.warn("Provider created but connect method not available");
+    }
+
+    return {
+      ydoc,
+      ytext,
+      provider,
+    };
+  } catch (error) {
+    // Clean up on error
+    if (ydoc) {
+      try {
+        ydoc.destroy();
+      } catch (destroyError) {
+        console.error("Error destroying Yjs document:", destroyError);
+      }
+    }
+    // Re-throw with more context
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to create collaborative document: ${errorMessage}`);
+  }
 }
 
 /**
