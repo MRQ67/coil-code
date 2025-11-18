@@ -2,11 +2,12 @@
 
 import React from 'react';
 import UserListTooltip from './UserListTooltip';
+import type { User } from '@/hooks/usePresence';
 
 interface TopBarProps {
   roomName?: string;
   userCount?: number;
-  users?: { username: string; color: string; gender: 'boy' | 'girl' | 'random' }[];
+  users?: User[];
   maxVisibleUsers?: number;
   onEditProfile?: () => void;
   onLeaveRoom?: () => void;

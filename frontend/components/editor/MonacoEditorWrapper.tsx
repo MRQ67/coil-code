@@ -8,7 +8,7 @@ interface MonacoEditorWrapperProps {
   onMount: (editor: any, monaco: any) => void;
   language: string;
   value?: string;
-  onChange?: (value: string) => void;
+  onChange?: (value: string | undefined) => void;
   theme?: string;
   options?: any;
   height?: string;
