@@ -16,6 +16,7 @@ import { usePresence } from "@/hooks/usePresence";
 import { useAutoSave } from "@/hooks/useAutoSave";
 import UsernamePrompt from "@/components/UsernamePrompt";
 import UserListTooltip from "@/components/editor/UserListTooltip";
+import SaveStatusIndicator from "@/components/editor/SaveStatusIndicator";
 import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 
@@ -135,7 +136,7 @@ export default function EditorPage() {
   }, [collaborativeDoc, roomId, isConnected, roomData]);
 
   // Auto-save - save to Convex periodically and when leaving
-  useAutoSave({
+  const { save: manualSave, saveStatus } = useAutoSave({
     roomId: roomId || '',
     htmlContent: () => collaborativeDoc?.ydoc.getText('html').toString() || '',
     cssContent: () => collaborativeDoc?.ydoc.getText('css').toString() || '',
@@ -157,6 +158,24 @@ export default function EditorPage() {
     generateRandom();
     setShowEditModal(false);
   };
+
+  // Manual save with Cmd+S / Ctrl+S
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Check for Cmd+S (Mac) or Ctrl+S (Windows/Linux)
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        e.preventDefault(); // Prevent browser's default save dialog
+        manualSave();
+        console.log('🔄 Manual save triggered');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [manualSave]);
 
   // Invalid room ID
   if (!roomId) {
@@ -235,6 +254,7 @@ export default function EditorPage() {
             <span className="rounded-full bg-green-500/20 px-3 py-1 text-sm text-green-400">
               Connected
             </span>
+            <SaveStatusIndicator status={saveStatus} />
             <div className="text-sm text-gray-400">
               Room: <span className="font-mono text-gray-300">{roomId}</span>
             </div>

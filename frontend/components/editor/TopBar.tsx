@@ -2,7 +2,9 @@
 
 import React from 'react';
 import UserListTooltip from './UserListTooltip';
+import SaveStatusIndicator from './SaveStatusIndicator';
 import type { User } from '@/hooks/usePresence';
+import type { SaveStatus } from '@/hooks/useAutoSave';
 
 interface TopBarProps {
   roomName?: string;
@@ -13,6 +15,7 @@ interface TopBarProps {
   onLeaveRoom?: () => void;
   activeFile?: string;
   fileIcon?: string;
+  saveStatus?: SaveStatus;
 }
 
 const TopBar: React.FC<TopBarProps> = ({
@@ -23,7 +26,8 @@ const TopBar: React.FC<TopBarProps> = ({
   onEditProfile,
   onLeaveRoom,
   activeFile = 'index.html',
-  fileIcon = '📄'
+  fileIcon = '📄',
+  saveStatus = 'idle'
 }) => {
   return (
     <header className="flex items-center justify-between border-b border-[#3C3C3C] bg-[#2D2D30] px-6 py-3">
@@ -34,6 +38,7 @@ const TopBar: React.FC<TopBarProps> = ({
         <span className="rounded-full bg-green-500/20 px-3 py-1 text-sm text-green-400">
           Connected
         </span>
+        <SaveStatusIndicator status={saveStatus} />
         <div className="text-sm text-gray-400">
           Room: <span className="font-mono text-gray-300">{roomName}</span>
         </div>
