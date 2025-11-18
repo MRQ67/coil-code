@@ -75,13 +75,21 @@ export function useAutoSave({
         setSaveStatus('saving');
         try {
           // OPTIMIZED: Single mutation call instead of 3 separate calls
-          await saveRoomBatch({
+          const result = await saveRoomBatch({
             roomId,
             htmlContent: currentHtml,
             cssContent: currentCss,
             jsContent: currentJs,
             username,
           });
+
+          // Handle rate limit errors
+          if (!result.success) {
+            console.warn('⚠️ Save blocked:', result.error);
+            setSaveStatus('error');
+            setTimeout(() => setSaveStatus('idle'), 3000);
+            return;
+          }
 
           lastSaveRef.current = {
             html: currentHtml,
@@ -110,13 +118,21 @@ export function useAutoSave({
     setSaveStatus('saving');
     try {
       // OPTIMIZED: Single mutation call instead of 3 separate calls
-      await saveRoomBatch({
+      const result = await saveRoomBatch({
         roomId,
         htmlContent: currentHtml,
         cssContent: currentCss,
         jsContent: currentJs,
         username,
       });
+
+      // Handle rate limit errors and validation errors
+      if (!result.success) {
+        console.warn('⚠️ Save blocked:', result.error);
+        setSaveStatus('error');
+        setTimeout(() => setSaveStatus('idle'), 3000);
+        return;
+      }
 
       lastSaveRef.current = {
         html: currentHtml,

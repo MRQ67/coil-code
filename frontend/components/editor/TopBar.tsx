@@ -1,8 +1,10 @@
 'use client';
 
 import React from 'react';
+import type YPartyKitProvider from 'y-partykit/provider';
 import UserListTooltip from './UserListTooltip';
 import SaveStatusIndicator from './SaveStatusIndicator';
+import ConnectionStatusIndicator from './ConnectionStatusIndicator';
 import type { User } from '@/hooks/usePresence';
 import type { SaveStatus } from '@/hooks/useAutoSave';
 
@@ -16,6 +18,7 @@ interface TopBarProps {
   activeFile?: string;
   fileIcon?: string;
   saveStatus?: SaveStatus;
+  provider?: YPartyKitProvider | null;
 }
 
 const TopBar: React.FC<TopBarProps> = ({
@@ -27,7 +30,8 @@ const TopBar: React.FC<TopBarProps> = ({
   onLeaveRoom,
   activeFile = 'index.html',
   fileIcon = '📄',
-  saveStatus = 'idle'
+  saveStatus = 'idle',
+  provider = null
 }) => {
   return (
     <header className="flex items-center justify-between border-b border-[#3C3C3C] bg-[#2D2D30] px-6 py-3">
@@ -35,9 +39,7 @@ const TopBar: React.FC<TopBarProps> = ({
         <h1 className="text-lg font-semibold text-white">
           Coil Code Editor
         </h1>
-        <span className="rounded-full bg-green-500/20 px-3 py-1 text-sm text-green-400">
-          Connected
-        </span>
+        <ConnectionStatusIndicator provider={provider} />
         <SaveStatusIndicator status={saveStatus} />
         <div className="text-sm text-gray-400">
           Room: <span className="font-mono text-gray-300">{roomName}</span>
