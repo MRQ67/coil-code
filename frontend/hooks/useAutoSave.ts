@@ -1,6 +1,8 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
+
+export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 interface UseAutoSaveProps {
   roomId: string;
@@ -14,6 +16,11 @@ interface UseAutoSaveProps {
   minChangeThreshold?: number;
 }
 
+interface UseAutoSaveReturn {
+  save: () => Promise<void>;
+  saveStatus: SaveStatus;
+}
+
 export function useAutoSave({
   roomId,
   htmlContent,
@@ -22,14 +29,16 @@ export function useAutoSave({
   username,
   interval = 30000,
   minChangeThreshold = 10,
-}: UseAutoSaveProps) {
+}: UseAutoSaveProps): UseAutoSaveReturn {
   const lastSaveRef = useRef<{ html: string; css: string; js: string }>({
     html: '',
     css: '',
     js: '',
   });
-  const saveRoom = useMutation(api.rooms.saveRoom);
+  // OPTIMIZED: Use batched mutation instead of 3 separate calls
+  const saveRoomBatch = useMutation(api.rooms.saveRoomBatch);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
 
   // Memoize the save function to avoid recreating it on every render
   const save = useCallback(async () => {
@@ -50,12 +59,12 @@ export function useAutoSave({
     const htmlChange = Math.abs(currentHtml.length - lastSaveRef.current.html.length);
     const cssChange = Math.abs(currentCss.length - lastSaveRef.current.css.length);
     const jsChange = Math.abs(currentJs.length - lastSaveRef.current.js.length);
-    
+
     const totalChange = htmlChange + cssChange + jsChange;
-    
-    if (totalChange < minChangeThreshold && 
-        lastSaveRef.current.html && 
-        lastSaveRef.current.css && 
+
+    if (totalChange < minChangeThreshold &&
+        lastSaveRef.current.html &&
+        lastSaveRef.current.css &&
         lastSaveRef.current.js) {
       // If changes are small, delay the save to batch multiple small changes
       if (timeoutRef.current) {
@@ -63,82 +72,88 @@ export function useAutoSave({
       }
 
       timeoutRef.current = setTimeout(async () => {
+        setSaveStatus('saving');
         try {
-          // Save each content type separately
-          await Promise.all([
-            saveRoom({
-              content: currentHtml,
-              language: 'html',
-              roomId,
-              username,
-            }),
-            saveRoom({
-              content: currentCss,
-              language: 'css',
-              roomId,
-              username,
-            }),
-            saveRoom({
-              content: currentJs,
-              language: 'js',
-              roomId,
-              username,
-            })
-          ]);
+          // OPTIMIZED: Single mutation call instead of 3 separate calls
+          const result = await saveRoomBatch({
+            roomId,
+            htmlContent: currentHtml,
+            cssContent: currentCss,
+            jsContent: currentJs,
+            username,
+          });
+
+          // Handle rate limit errors
+          if (!result.success) {
+            console.warn('⚠️ Save blocked:', result.error);
+            setSaveStatus('error');
+            setTimeout(() => setSaveStatus('idle'), 3000);
+            return;
+          }
 
           lastSaveRef.current = {
             html: currentHtml,
             css: currentCss,
             js: currentJs,
           };
-          console.log('✅ Saved:', new Date().toLocaleTimeString(), 
-            'HTML:', currentHtml.length, 
-            'CSS:', currentCss.length, 
+          setSaveStatus('saved');
+          console.log('✅ Saved:', new Date().toLocaleTimeString(),
+            'HTML:', currentHtml.length,
+            'CSS:', currentCss.length,
             'JS:', currentJs.length);
+
+          // Reset to idle after 2 seconds
+          setTimeout(() => setSaveStatus('idle'), 2000);
         } catch (error) {
           console.error('❌ Save failed:', error);
+          setSaveStatus('error');
+          // Reset to idle after 3 seconds
+          setTimeout(() => setSaveStatus('idle'), 3000);
         }
       }, 5000); // Wait 5 seconds before saving small changes
 
       return;
     }
 
+    setSaveStatus('saving');
     try {
-      // Save each content type separately
-      await Promise.all([
-        saveRoom({
-          content: currentHtml,
-          language: 'html',
-          roomId,
-          username,
-        }),
-        saveRoom({
-          content: currentCss,
-          language: 'css',
-          roomId,
-          username,
-        }),
-        saveRoom({
-          content: currentJs,
-          language: 'js',
-          roomId,
-          username,
-        })
-      ]);
+      // OPTIMIZED: Single mutation call instead of 3 separate calls
+      const result = await saveRoomBatch({
+        roomId,
+        htmlContent: currentHtml,
+        cssContent: currentCss,
+        jsContent: currentJs,
+        username,
+      });
+
+      // Handle rate limit errors and validation errors
+      if (!result.success) {
+        console.warn('⚠️ Save blocked:', result.error);
+        setSaveStatus('error');
+        setTimeout(() => setSaveStatus('idle'), 3000);
+        return;
+      }
 
       lastSaveRef.current = {
         html: currentHtml,
         css: currentCss,
         js: currentJs,
       };
-      console.log('✅ Saved:', new Date().toLocaleTimeString(), 
-        'HTML:', currentHtml.length, 
-        'CSS:', currentCss.length, 
+      setSaveStatus('saved');
+      console.log('✅ Saved:', new Date().toLocaleTimeString(),
+        'HTML:', currentHtml.length,
+        'CSS:', currentCss.length,
         'JS:', currentJs.length);
+
+      // Reset to idle after 2 seconds
+      setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (error) {
       console.error('❌ Save failed:', error);
+      setSaveStatus('error');
+      // Reset to idle after 3 seconds
+      setTimeout(() => setSaveStatus('idle'), 3000);
     }
-  }, [roomId, htmlContent, cssContent, jsContent, username, saveRoom, minChangeThreshold]);
+  }, [roomId, htmlContent, cssContent, jsContent, username, saveRoomBatch, minChangeThreshold]);
 
   useEffect(() => {
     if (!roomId || !username) return;
@@ -181,6 +196,6 @@ export function useAutoSave({
     };
   }, []);
 
-  // Return the save function so it can be called manually if needed
-  return { save };
+  // Return the save function and status so it can be called manually if needed
+  return { save, saveStatus };
 }

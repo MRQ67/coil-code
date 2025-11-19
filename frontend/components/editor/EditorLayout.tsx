@@ -1,11 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import * as Y from 'yjs';
 import type YPartyKitProvider from 'y-partykit/provider';
 import FileTree from './FileTree';
-import MultiFileEditor from './MultiFileEditor';
-import PreviewPane from './PreviewPane';
+// Dynamically import MultiFileEditor to avoid SSR issues with Monaco
+const MultiFileEditor = dynamic(() => import('./MultiFileEditor'), { ssr: false });
+import OptimizedPreviewPane from './OptimizedPreviewPane';
 
 interface EditorLayoutProps {
   ydoc: Y.Doc;
@@ -29,24 +31,9 @@ const EditorLayout = ({
   const [activeFile, setActiveFile] = useState<'html' | 'css' | 'js'>('html');
   const [isFileTreeOpen, setIsFileTreeOpen] = useState(true);
   const [isPreviewOpen, setIsPreviewOpen] = useState(true);
-  
-  // Initialize content from ydoc if provided
-  useEffect(() => {
-    const yhtmlText = ydoc.getText('html');
-    const ycssText = ydoc.getText('css');
-    const yjsText = ydoc.getText('js');
-    
-    // Only set initial content if the texts are empty
-    if (yhtmlText.length === 0 && initialHtmlContent) {
-      yhtmlText.insert(0, initialHtmlContent);
-    }
-    if (ycssText.length === 0 && initialCssContent) {
-      ycssText.insert(0, initialCssContent);
-    }
-    if (yjsText.length === 0 && initialJsContent) {
-      yjsText.insert(0, initialJsContent);
-    }
-  }, [ydoc, initialHtmlContent, initialCssContent, initialJsContent]);
+
+  // NOTE: Content initialization is handled in page.tsx to avoid duplication
+  // Do not initialize content here to prevent race conditions with PartyKit sync
 
   // Get current content
   const getHtmlContent = () => ydoc.getText('html').toString();
@@ -81,9 +68,9 @@ const EditorLayout = ({
           />
         </div>
         
-        {/* Preview Pane */}
+        {/* Preview Pane - OPTIMIZED */}
         <div className={`${isPreviewOpen ? 'w-[40%]' : 'w-0'} flex flex-col`}>
-          <PreviewPane
+          <OptimizedPreviewPane
             htmlContent={getHtmlContent()}
             cssContent={getCssContent()}
             jsContent={getJsContent()}
