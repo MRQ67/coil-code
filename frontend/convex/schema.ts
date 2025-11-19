@@ -10,8 +10,8 @@ export default defineSchema({
     lastEditedBy: v.string(),                 // Username of last editor
     lastEditedAt: v.number(),                 // Timestamp (Date.now())
 
-    // Analytics fields
-    lastActiveAt: v.number(),                 // Last activity timestamp (for cleanup)
+    // Analytics fields (all optional for backward compatibility)
+    lastActiveAt: v.optional(v.number()),     // Last activity timestamp (for cleanup)
     saveCount: v.optional(v.number()),        // Total number of saves
     totalSize: v.optional(v.number()),        // Total content size in bytes
     createdAt: v.optional(v.number()),        // Room creation timestamp

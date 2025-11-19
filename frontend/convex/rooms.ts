@@ -51,108 +51,119 @@ export const saveRoomBatch = mutation({
     })),
   }),
   handler: async (ctx, args) => {
-    const timestamp = Date.now();
+    try {
+      const timestamp = Date.now();
 
-    // OPTIMIZED: Rate limiting check
-    // Prevent spam by limiting saves per minute
-    const existing = await ctx.db
-      .query("rooms")
-      .withIndex("by_roomId", (q) => q.eq("roomId", args.roomId))
-      .first();
+      // OPTIMIZED: Rate limiting check
+      // Prevent spam by limiting saves per minute
+      const existing = await ctx.db
+        .query("rooms")
+        .withIndex("by_roomId", (q) => q.eq("roomId", args.roomId))
+        .first();
 
-    if (existing) {
-      const timeSinceLastSave = timestamp - existing.lastEditedAt;
-      const recentSaveCount = existing.saveCount || 0;
+      if (existing) {
+        // Backfill lastActiveAt if it doesn't exist (for old rooms)
+        const lastActiveAt = existing.lastActiveAt || existing.lastEditedAt || timestamp;
+        const timeSinceLastSave = timestamp - existing.lastEditedAt;
+        const recentSaveCount = existing.saveCount || 0;
 
-      // Reset save count if outside rate limit window
-      const isInRateLimitWindow = timeSinceLastSave < RATE_LIMIT_WINDOW_MS;
+        // Reset save count if outside rate limit window
+        const isInRateLimitWindow = timeSinceLastSave < RATE_LIMIT_WINDOW_MS;
 
-      if (isInRateLimitWindow && recentSaveCount >= MAX_SAVES_PER_MINUTE) {
+        if (isInRateLimitWindow && recentSaveCount >= MAX_SAVES_PER_MINUTE) {
+          return {
+            success: false,
+            error: `Rate limit exceeded. Maximum ${MAX_SAVES_PER_MINUTE} saves per minute. Please wait ${Math.ceil((RATE_LIMIT_WINDOW_MS - timeSinceLastSave) / 1000)}s.`,
+          };
+        }
+      }
+
+      // Calculate content sizes
+      const htmlSize = new TextEncoder().encode(args.htmlContent).length;
+      const cssSize = new TextEncoder().encode(args.cssContent).length;
+      const jsSize = new TextEncoder().encode(args.jsContent).length;
+      const totalSize = htmlSize + cssSize + jsSize;
+
+      // Validate content size limits
+      if (htmlSize > MAX_FILE_SIZE) {
         return {
           success: false,
-          error: `Rate limit exceeded. Maximum ${MAX_SAVES_PER_MINUTE} saves per minute. Please wait ${Math.ceil((RATE_LIMIT_WINDOW_MS - timeSinceLastSave) / 1000)}s.`,
+          error: `HTML content too large (${(htmlSize / 1024 / 1024).toFixed(2)}MB). Maximum allowed is 1MB.`,
         };
       }
-    }
+      if (cssSize > MAX_FILE_SIZE) {
+        return {
+          success: false,
+          error: `CSS content too large (${(cssSize / 1024 / 1024).toFixed(2)}MB). Maximum allowed is 1MB.`,
+        };
+      }
+      if (jsSize > MAX_FILE_SIZE) {
+        return {
+          success: false,
+          error: `JavaScript content too large (${(jsSize / 1024 / 1024).toFixed(2)}MB). Maximum allowed is 1MB.`,
+        };
+      }
+      if (totalSize > MAX_TOTAL_SIZE) {
+        return {
+          success: false,
+          error: `Total content too large (${(totalSize / 1024 / 1024).toFixed(2)}MB). Maximum allowed is 3MB.`,
+        };
+      }
 
-    // Calculate content sizes
-    const htmlSize = new TextEncoder().encode(args.htmlContent).length;
-    const cssSize = new TextEncoder().encode(args.cssContent).length;
-    const jsSize = new TextEncoder().encode(args.jsContent).length;
-    const totalSize = htmlSize + cssSize + jsSize;
+      if (existing) {
+        // OPTIMIZED: Smart save count tracking with rate limit window reset
+        const timeSinceLastSave = timestamp - existing.lastEditedAt;
+        const isInRateLimitWindow = timeSinceLastSave < RATE_LIMIT_WINDOW_MS;
 
-    // Validate content size limits
-    if (htmlSize > MAX_FILE_SIZE) {
+        // Reset save count if outside rate limit window, otherwise increment
+        const newSaveCount = isInRateLimitWindow
+          ? (existing.saveCount || 0) + 1
+          : 1;
+
+        // Update all content fields in a single transaction with analytics
+        await ctx.db.patch(existing._id, {
+          htmlContent: args.htmlContent,
+          cssContent: args.cssContent,
+          jsContent: args.jsContent,
+          lastEditedBy: args.username,
+          lastEditedAt: timestamp,
+          lastActiveAt: timestamp, // Update last activity (will backfill if missing)
+          saveCount: newSaveCount, // Smart save count tracking
+          totalSize: totalSize, // Update total size
+        });
+      } else {
+        // Create new room with all content fields and analytics
+        await ctx.db.insert("rooms", {
+          roomId: args.roomId,
+          htmlContent: args.htmlContent,
+          cssContent: args.cssContent,
+          jsContent: args.jsContent,
+          lastEditedBy: args.username,
+          lastEditedAt: timestamp,
+          lastActiveAt: timestamp, // Set initial activity
+          saveCount: 1, // First save
+          totalSize: totalSize, // Initial size
+          createdAt: timestamp, // Room creation time
+        });
+      }
+
+      return {
+        success: true,
+        sizeInfo: {
+          htmlSize,
+          cssSize,
+          jsSize,
+          totalSize,
+        },
+      };
+    } catch (error) {
+      // Catch any errors and return them as proper error responses
+      console.error("saveRoomBatch error:", error);
       return {
         success: false,
-        error: `HTML content too large (${(htmlSize / 1024 / 1024).toFixed(2)}MB). Maximum allowed is 1MB.`,
+        error: error instanceof Error ? error.message : "Unknown error occurred during save",
       };
     }
-    if (cssSize > MAX_FILE_SIZE) {
-      return {
-        success: false,
-        error: `CSS content too large (${(cssSize / 1024 / 1024).toFixed(2)}MB). Maximum allowed is 1MB.`,
-      };
-    }
-    if (jsSize > MAX_FILE_SIZE) {
-      return {
-        success: false,
-        error: `JavaScript content too large (${(jsSize / 1024 / 1024).toFixed(2)}MB). Maximum allowed is 1MB.`,
-      };
-    }
-    if (totalSize > MAX_TOTAL_SIZE) {
-      return {
-        success: false,
-        error: `Total content too large (${(totalSize / 1024 / 1024).toFixed(2)}MB). Maximum allowed is 3MB.`,
-      };
-    }
-
-    if (existing) {
-      // OPTIMIZED: Smart save count tracking with rate limit window reset
-      const timeSinceLastSave = timestamp - existing.lastEditedAt;
-      const isInRateLimitWindow = timeSinceLastSave < RATE_LIMIT_WINDOW_MS;
-
-      // Reset save count if outside rate limit window, otherwise increment
-      const newSaveCount = isInRateLimitWindow
-        ? (existing.saveCount || 0) + 1
-        : 1;
-
-      // Update all content fields in a single transaction with analytics
-      await ctx.db.patch(existing._id, {
-        htmlContent: args.htmlContent,
-        cssContent: args.cssContent,
-        jsContent: args.jsContent,
-        lastEditedBy: args.username,
-        lastEditedAt: timestamp,
-        lastActiveAt: timestamp, // Update last activity
-        saveCount: newSaveCount, // Smart save count tracking
-        totalSize: totalSize, // Update total size
-      });
-    } else {
-      // Create new room with all content fields and analytics
-      await ctx.db.insert("rooms", {
-        roomId: args.roomId,
-        htmlContent: args.htmlContent,
-        cssContent: args.cssContent,
-        jsContent: args.jsContent,
-        lastEditedBy: args.username,
-        lastEditedAt: timestamp,
-        lastActiveAt: timestamp, // Set initial activity
-        saveCount: 1, // First save
-        totalSize: totalSize, // Initial size
-        createdAt: timestamp, // Room creation time
-      });
-    }
-
-    return {
-      success: true,
-      sizeInfo: {
-        htmlSize,
-        cssSize,
-        jsSize,
-        totalSize,
-      },
-    };
   },
 });
 
