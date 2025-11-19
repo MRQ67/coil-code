@@ -39,6 +39,7 @@ export function useAutoSave({
   const saveRoomBatch = useMutation(api.rooms.saveRoomBatch);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+  const isFirstSaveRef = useRef(true);
 
   // Memoize the save function to avoid recreating it on every render
   const save = useCallback(async () => {
@@ -62,15 +63,15 @@ export function useAutoSave({
 
     const totalChange = htmlChange + cssChange + jsChange;
 
-    if (totalChange < minChangeThreshold &&
-        lastSaveRef.current.html &&
-        lastSaveRef.current.css &&
-        lastSaveRef.current.js) {
-      // If changes are small, delay the save to batch multiple small changes
+    // FIXED: Always use debouncing for non-first saves, regardless of change size
+    // This prevents saves on every keystroke
+    if (!isFirstSaveRef.current) {
+      // Clear any existing timeout to reset the debounce timer
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
 
+      // Wait 3 seconds after user stops typing before saving
       timeoutRef.current = setTimeout(async () => {
         setSaveStatus('saving');
         try {
@@ -110,11 +111,12 @@ export function useAutoSave({
           // Reset to idle after 3 seconds
           setTimeout(() => setSaveStatus('idle'), 3000);
         }
-      }, 5000); // Wait 5 seconds before saving small changes
+      }, 3000); // Wait 3 seconds after user stops typing
 
       return;
     }
 
+    // First save or manual save - execute immediately
     setSaveStatus('saving');
     try {
       // OPTIMIZED: Single mutation call instead of 3 separate calls
@@ -139,6 +141,7 @@ export function useAutoSave({
         css: currentCss,
         js: currentJs,
       };
+      isFirstSaveRef.current = false; // Mark that first save is complete
       setSaveStatus('saved');
       console.log('✅ Saved:', new Date().toLocaleTimeString(),
         'HTML:', currentHtml.length,
@@ -153,23 +156,30 @@ export function useAutoSave({
       // Reset to idle after 3 seconds
       setTimeout(() => setSaveStatus('idle'), 3000);
     }
-  }, [roomId, htmlContent, cssContent, jsContent, username, saveRoomBatch, minChangeThreshold]);
+  }, [roomId, htmlContent, cssContent, jsContent, username, saveRoomBatch]);
+
+  // FIXED: Use ref to store save function to prevent useEffect from re-running
+  // on every keystroke when save function changes
+  const saveRef = useRef(save);
+  useEffect(() => {
+    saveRef.current = save;
+  }, [save]);
 
   useEffect(() => {
     if (!roomId || !username) return;
 
     // Initial save after a short delay to ensure everything is initialized
-    const initTimeout = setTimeout(save, 1000);
+    const initTimeout = setTimeout(() => saveRef.current(), 1000);
 
-    // Set up periodic saving
-    const id = setInterval(save, interval);
+    // Set up periodic saving (only saves if there are changes)
+    const id = setInterval(() => saveRef.current(), interval);
 
     // Save when the page is about to unload
     const handleBeforeUnload = () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      save();
+      saveRef.current();
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
@@ -183,9 +193,9 @@ export function useAutoSave({
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      save();
+      saveRef.current();
     };
-  }, [roomId, username, save, interval]);
+  }, [roomId, username, interval]); // FIXED: save removed from dependencies
 
   // Also save when the component unmounts
   useEffect(() => {
