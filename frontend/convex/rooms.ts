@@ -263,8 +263,6 @@ export const saveRoom = mutation({
 });
 
 // Get room by ID
-
-// Get room by ID
 export const getRoom = query({
   args: {
     roomId: v.string()
@@ -279,6 +277,11 @@ export const getRoom = query({
       jsContent: v.optional(v.string()),
       lastEditedBy: v.string(),
       lastEditedAt: v.number(),
+      // Analytics fields (optional for backward compatibility)
+      lastActiveAt: v.optional(v.number()),
+      saveCount: v.optional(v.number()),
+      totalSize: v.optional(v.number()),
+      createdAt: v.optional(v.number()),
     }),
     v.null()
   ),
