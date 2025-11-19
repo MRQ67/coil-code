@@ -200,15 +200,21 @@ export function setUserAwareness(
   );
 
   // Set local user state in awareness
-  // IMPORTANT: Y-Monaco looks for 'name' field for cursor labels
+  // IMPORTANT: Y-Monaco looks for 'name' and 'color' fields at ROOT level for cursor labels
   const awarenessData = {
-    name: userInfo.username, // Y-Monaco reads this for cursor labels
-    username: userInfo.username, // Keep for app logic compatibility
-    gender: userInfo.gender, // For avatar display
-    color: color, // Deterministic cursor color
+    user: {
+      name: userInfo.username, // Nested for app logic
+      username: userInfo.username,
+      gender: userInfo.gender,
+      color: color,
+    },
+    // Y-Monaco requires these at root level for cursor label rendering
+    name: userInfo.username,
+    color: color,
   };
 
-  provider.awareness.setLocalStateField("user", awarenessData);
+  // Set the entire awareness state at once (not just the "user" field)
+  provider.awareness.setLocalState(awarenessData);
 
   console.log(`👤 User awareness set: ${userInfo.username} (${color})`);
   console.log(`📋 Full awareness data:`, awarenessData);
@@ -217,14 +223,14 @@ export function setUserAwareness(
     provider.awareness.getLocalState(),
   );
 
-  // Double-check that name field is set correctly
+  // Double-check that name field is set correctly at root level
   const localState = provider.awareness.getLocalState();
-  if (!localState?.user?.name) {
-    console.error(`❌ CRITICAL: 'name' field not set in awareness!`);
+  if (!localState?.name) {
+    console.error(`❌ CRITICAL: 'name' field not set at root level in awareness!`);
     console.error(`   Awareness state:`, localState);
   } else {
     console.log(
-      `✅ Confirmed: name="${localState.user.name}" is set in awareness`,
+      `✅ Confirmed: name="${localState.name}" color="${localState.color}" set at root level`,
     );
   }
 }

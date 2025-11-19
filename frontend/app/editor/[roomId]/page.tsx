@@ -3,7 +3,9 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import EditorLayout from "@/components/editor/EditorLayout";
+import dynamic from "next/dynamic";
+// Dynamically import EditorLayout to avoid SSR issues with Monaco
+const EditorLayout = dynamic(() => import("@/components/editor/EditorLayout"), { ssr: false });
 import ErrorBoundary from "@/components/ErrorBoundary";
 import {
   createCollaborativeDoc,
@@ -100,38 +102,62 @@ export default function EditorPage() {
     };
   }, [roomId, userInfo, isLoadingUser]);
 
-  // Load room content from Convex only once after initial connection
+  // Load room content from Convex only once after initial connection AND after PartyKit sync
   useEffect(() => {
     if (!collaborativeDoc || !roomId || !isConnected || initialContentLoadedRef.current) return;
+    if (roomData === undefined) return;
 
-    // Check if roomData is loaded
-    if (roomData !== undefined) {
-      if (roomData) {
-        // Apply content to Yjs document without disconnecting
-        // Create a Yjs transaction to update the documents
-        collaborativeDoc.ydoc.transact(() => {
-          // Set HTML content
-          const yhtmlText = collaborativeDoc.ydoc.getText('html');
-          yhtmlText.delete(0, yhtmlText.length);
+    // CRITICAL: Wait for PartyKit to finish its initial sync before loading from Convex
+    // This prevents duplication where we load from Convex, then PartyKit syncs additional content
+    const loadContentAfterSync = () => {
+      if (!collaborativeDoc || initialContentLoadedRef.current) return;
+
+      collaborativeDoc.ydoc.transact(() => {
+        const yhtmlText = collaborativeDoc.ydoc.getText('html');
+        const ycssText = collaborativeDoc.ydoc.getText('css');
+        const yjsText = collaborativeDoc.ydoc.getText('js');
+
+        // Only load from Convex if Yjs document is STILL empty after PartyKit sync
+        const isDocumentEmpty = yhtmlText.length === 0 && ycssText.length === 0 && yjsText.length === 0;
+
+        if (isDocumentEmpty && roomData) {
+          // Document is empty even after sync, load from Convex
           yhtmlText.insert(0, roomData.htmlContent || '<!-- Start coding HTML here -->');
-
-          // Set CSS content
-          const ycssText = collaborativeDoc.ydoc.getText('css');
-          ycssText.delete(0, ycssText.length);
           ycssText.insert(0, roomData.cssContent || '/* Start coding CSS here */');
-
-          // Set JS content
-          const yjsText = collaborativeDoc.ydoc.getText('js');
-          yjsText.delete(0, yjsText.length);
           yjsText.insert(0, roomData.jsContent || '// Start coding JavaScript here');
-        });
-      }
+          console.log('📥 Loaded initial content from Convex (document was empty after sync)');
+        } else if (!isDocumentEmpty) {
+          console.log('✅ Document has content from PartyKit sync, skipping Convex load');
+        }
+      });
+
       initialContentLoadedRef.current = true;
-      // Set the state only once when initial content is loaded
-      setTimeout(() => {
-        setInitialDataLoaded(true);
-        setIsLoading(false);
-      }, 0);
+      setInitialDataLoaded(true);
+      setIsLoading(false);
+    };
+
+    // Wait for provider to sync before loading content
+    // The 'synced' event fires after initial sync is complete
+    if (collaborativeDoc.provider.synced) {
+      // Already synced, load immediately
+      console.log('🔄 PartyKit already synced, loading content now');
+      loadContentAfterSync();
+    } else {
+      // Wait for sync to complete
+      console.log('⏳ Waiting for PartyKit to sync before loading content...');
+      const handleSync = (isSynced: boolean) => {
+        if (isSynced) {
+          console.log('✅ PartyKit sync complete, now checking for content');
+          loadContentAfterSync();
+          collaborativeDoc.provider.off('synced', handleSync);
+        }
+      };
+      collaborativeDoc.provider.on('synced', handleSync);
+
+      // Cleanup listener
+      return () => {
+        collaborativeDoc.provider.off('synced', handleSync);
+      };
     }
   }, [collaborativeDoc, roomId, isConnected, roomData]);
 

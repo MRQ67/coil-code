@@ -115,12 +115,14 @@ function enhanceSingleCursor(cursorElement: HTMLElement): void {
 /**
  * Alternative simpler approach: Set name tag colors via DOM manipulation
  * This directly sets the background color on cursor name tags
+ * ALSO sets data-name attribute since MonacoBinding doesn't do it automatically
  */
 export function updateCursorNameTagColors(provider: any): void {
   if (!provider?.awareness) return;
 
   const updateColors = () => {
     const states = provider.awareness.getStates();
+    const localClientId = provider.awareness.clientID;
 
     // Wait for next frame to ensure DOM is updated
     requestAnimationFrame(() => {
@@ -128,13 +130,37 @@ export function updateCursorNameTagColors(provider: any): void {
 
       cursorHeads.forEach((head) => {
         if (head instanceof HTMLElement) {
-          const name = head.getAttribute("data-name");
-          const bgColor = head.style.backgroundColor;
+          // CRITICAL: Extract client ID from the class name (e.g., yRemoteSelectionHead-123)
+          const classNames = Array.from(head.classList);
+          const clientIdClass = classNames.find(cls => cls.startsWith('yRemoteSelectionHead-'));
 
-          if (name && bgColor) {
-            // Set CSS variable on the element itself
-            // so ::after can access it
-            head.style.setProperty("--cursor-bg-color", bgColor);
+          if (clientIdClass) {
+            const clientId = parseInt(clientIdClass.replace('yRemoteSelectionHead-', ''));
+
+            // Skip if this is the local user's cursor
+            if (clientId === localClientId) return;
+
+            // Get awareness state for this client
+            const state = states.get(clientId);
+
+            if (state) {
+              // Get name from awareness (try multiple fields for compatibility)
+              const name = state.name || state.user?.name || state.user?.username || 'Unknown';
+              const color = state.color || state.user?.color;
+
+              // CRITICAL: Set the data-name attribute that CSS uses
+              if (name && !head.getAttribute("data-name")) {
+                head.setAttribute("data-name", name);
+                console.log(`🏷️  Set cursor name for client ${clientId}: "${name}"`);
+              }
+
+              // Set the color if available
+              if (color && head.style.backgroundColor !== color) {
+                head.style.backgroundColor = color;
+                head.style.setProperty("--cursor-bg-color", color);
+                console.log(`🎨 Set cursor color for ${name}: ${color}`);
+              }
+            }
           }
         }
       });
@@ -147,8 +173,8 @@ export function updateCursorNameTagColors(provider: any): void {
   // Update on awareness changes
   provider.awareness.on("change", updateColors);
 
-  // Also update periodically (fallback)
-  setInterval(updateColors, 500);
+  // Also update periodically (fallback) - less frequently to reduce overhead
+  setInterval(updateColors, 1000);
 }
 
 /**

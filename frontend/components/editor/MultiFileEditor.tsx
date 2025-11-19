@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as Y from 'yjs';
 import type YPartyKitProvider from 'y-partykit/provider';
-import { MonacoBinding } from 'y-monaco';
+// MonacoBinding is imported dynamically to avoid SSR issues
 import type { editor } from 'monaco-editor';
 import Editor from '@monaco-editor/react';
 
@@ -32,10 +32,10 @@ const MultiFileEditor = ({
   const cssModelRef = useRef<editor.ITextModel | null>(null);
   const jsModelRef = useRef<editor.ITextModel | null>(null);
   
-  // Binding refs
-  const htmlBindingRef = useRef<MonacoBinding | null>(null);
-  const cssBindingRef = useRef<MonacoBinding | null>(null);
-  const jsBindingRef = useRef<MonacoBinding | null>(null);
+  // Binding refs (using any to avoid SSR import of y-monaco types)
+  const htmlBindingRef = useRef<any>(null);
+  const cssBindingRef = useRef<any>(null);
+  const jsBindingRef = useRef<any>(null);
   
   // Cursor cleanup ref
   const cursorCleanupRef = useRef<(() => void) | null>(null);
@@ -62,6 +62,9 @@ const MultiFileEditor = ({
         return;
       }
 
+      // Dynamically import MonacoBinding to avoid SSR issues
+      const { MonacoBinding } = await import('y-monaco');
+
       // 1. Create models (only once, only here after Monaco loads)
       if (!htmlModelRef.current) {
         htmlModelRef.current = monaco.editor.createModel('', 'html');
@@ -82,7 +85,7 @@ const MultiFileEditor = ({
           provider.awareness
         );
       }
-      
+
       if (!cssBindingRef.current && cssModelRef.current) {
         cssBindingRef.current = new MonacoBinding(
           ycssText,
@@ -91,7 +94,7 @@ const MultiFileEditor = ({
           provider.awareness
         );
       }
-      
+
       if (!jsBindingRef.current && jsModelRef.current) {
         jsBindingRef.current = new MonacoBinding(
           yjsText,
