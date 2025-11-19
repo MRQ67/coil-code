@@ -5,7 +5,7 @@ import * as Y from 'yjs';
 import type YPartyKitProvider from 'y-partykit/provider';
 import FileTree from './FileTree';
 import MultiFileEditor from './MultiFileEditor';
-import PreviewPane from './PreviewPane';
+import OptimizedPreviewPane from './OptimizedPreviewPane';
 
 interface EditorLayoutProps {
   ydoc: Y.Doc;
@@ -81,9 +81,9 @@ const EditorLayout = ({
           />
         </div>
         
-        {/* Preview Pane */}
+        {/* Preview Pane - OPTIMIZED */}
         <div className={`${isPreviewOpen ? 'w-[40%]' : 'w-0'} flex flex-col`}>
-          <PreviewPane
+          <OptimizedPreviewPane
             htmlContent={getHtmlContent()}
             cssContent={getCssContent()}
             jsContent={getJsContent()}
