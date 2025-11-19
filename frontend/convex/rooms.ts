@@ -306,7 +306,7 @@ export const getAllRooms = query({
       roomId: v.string(),
       lastEditedBy: v.string(),
       lastEditedAt: v.number(),
-      lastActiveAt: v.number(),
+      lastActiveAt: v.number(), // Will backfill with lastEditedAt if missing
       saveCount: v.optional(v.number()),
       totalSize: v.optional(v.number()),
       createdAt: v.optional(v.number()),
@@ -337,7 +337,7 @@ export const getAllRooms = query({
         roomId: room.roomId,
         lastEditedBy: room.lastEditedBy,
         lastEditedAt: room.lastEditedAt,
-        lastActiveAt: room.lastActiveAt,
+        lastActiveAt: room.lastActiveAt || room.lastEditedAt, // Backfill if missing
         saveCount: room.saveCount,
         totalSize: room.totalSize,
         createdAt: room.createdAt,
@@ -358,7 +358,7 @@ export const getRoomStats = query({
       exists: v.boolean(),
       lastEditedBy: v.string(),
       lastEditedAt: v.number(),
-      lastActiveAt: v.number(),
+      lastActiveAt: v.number(), // Will backfill with lastEditedAt if missing
       saveCount: v.optional(v.number()),
       totalSize: v.optional(v.number()),
       createdAt: v.optional(v.number()),
@@ -377,7 +377,7 @@ export const getRoomStats = query({
       exists: true,
       lastEditedBy: room.lastEditedBy,
       lastEditedAt: room.lastEditedAt,
-      lastActiveAt: room.lastActiveAt,
+      lastActiveAt: room.lastActiveAt || room.lastEditedAt, // Backfill if missing
       saveCount: room.saveCount,
       totalSize: room.totalSize,
       createdAt: room.createdAt,
