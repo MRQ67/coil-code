@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import * as Y from 'yjs';
 import type YPartyKitProvider from 'y-partykit/provider';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
+import { toast } from 'sonner';
 import FileTree from './FileTree';
 // Dynamically import MultiFileEditor to avoid SSR issues with Monaco
 const MultiFileEditor = dynamic(() => import('./MultiFileEditor'), { ssr: false });
@@ -48,22 +49,37 @@ const EditorLayout = ({
       // Ctrl+B: Toggle file tree sidebar
       if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
         e.preventDefault();
-        setIsFileTreeOpen(prev => !prev);
-        console.log('🔧 Toggled file tree sidebar');
+        setIsFileTreeOpen(prev => {
+          const newState = !prev;
+          toast.success(newState ? 'File tree opened' : 'File tree closed', {
+            description: 'Press Ctrl+B to toggle',
+            duration: 2000,
+          });
+          return newState;
+        });
       }
 
       // Ctrl+Shift+P: Toggle preview panel
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'P') {
         e.preventDefault();
-        setIsPreviewOpen(prev => !prev);
-        console.log('🔧 Toggled preview panel');
+        setIsPreviewOpen(prev => {
+          const newState = !prev;
+          toast.success(newState ? 'Preview opened' : 'Preview closed', {
+            description: 'Press Ctrl+Shift+P to toggle',
+            duration: 2000,
+          });
+          return newState;
+        });
       }
 
       // Ctrl+R: Refresh preview (force reload)
       if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
         e.preventDefault();
         setRefreshTrigger(prev => prev + 1);
-        console.log('🔄 Preview refresh triggered');
+        toast.success('Preview refreshed', {
+          description: 'Force reloaded all content',
+          duration: 2000,
+        });
       }
 
       // Ctrl+P: Quick file switcher (cycle through HTML -> CSS -> JS)
@@ -73,8 +89,12 @@ const EditorLayout = ({
           const files: Array<'html' | 'css' | 'js'> = ['html', 'css', 'js'];
           const currentIndex = files.indexOf(prev);
           const nextIndex = (currentIndex + 1) % files.length;
-          console.log(`📄 Switched to ${files[nextIndex].toUpperCase()} file`);
-          return files[nextIndex];
+          const nextFile = files[nextIndex];
+          toast.success(`Switched to ${nextFile.toUpperCase()}`, {
+            description: 'Press Ctrl+P to cycle files',
+            duration: 2000,
+          });
+          return nextFile;
         });
       }
     };
