@@ -20,10 +20,10 @@ interface EditorLayoutProps {
   initialJsContent?: string;
 }
 
-const EditorLayout = ({ 
-  ydoc, 
-  provider, 
-  username, 
+const EditorLayout = ({
+  ydoc,
+  provider,
+  username,
   gender,
   initialHtmlContent = '',
   initialCssContent = '',
@@ -32,6 +32,7 @@ const EditorLayout = ({
   const [activeFile, setActiveFile] = useState<'html' | 'css' | 'js'>('html');
   const [isFileTreeOpen, setIsFileTreeOpen] = useState(true);
   const [isPreviewOpen, setIsPreviewOpen] = useState(true);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // NOTE: Content initialization is handled in page.tsx to avoid duplication
   // Do not initialize content here to prevent race conditions with PartyKit sync
@@ -40,6 +41,47 @@ const EditorLayout = ({
   const getHtmlContent = () => ydoc.getText('html').toString();
   const getCssContent = () => ydoc.getText('css').toString();
   const getJsContent = () => ydoc.getText('js').toString();
+
+  // Keyboard shortcuts handler
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+B: Toggle file tree sidebar
+      if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+        e.preventDefault();
+        setIsFileTreeOpen(prev => !prev);
+        console.log('🔧 Toggled file tree sidebar');
+      }
+
+      // Ctrl+Shift+P: Toggle preview panel
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'P') {
+        e.preventDefault();
+        setIsPreviewOpen(prev => !prev);
+        console.log('🔧 Toggled preview panel');
+      }
+
+      // Ctrl+R: Refresh preview (force reload)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+        e.preventDefault();
+        setRefreshTrigger(prev => prev + 1);
+        console.log('🔄 Preview refresh triggered');
+      }
+
+      // Ctrl+P: Quick file switcher (cycle through HTML -> CSS -> JS)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'p' && !e.shiftKey) {
+        e.preventDefault();
+        setActiveFile(prev => {
+          const files: Array<'html' | 'css' | 'js'> = ['html', 'css', 'js'];
+          const currentIndex = files.indexOf(prev);
+          const nextIndex = (currentIndex + 1) % files.length;
+          console.log(`📄 Switched to ${files[nextIndex].toUpperCase()} file`);
+          return files[nextIndex];
+        });
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   return (
     <div className="flex flex-col h-full bg-[#1E1E1E] text-[#CCCCCC]">
@@ -108,6 +150,7 @@ const EditorLayout = ({
               jsContent={getJsContent()}
               isPreviewOpen={isPreviewOpen}
               onTogglePreview={() => setIsPreviewOpen(!isPreviewOpen)}
+              refreshTrigger={refreshTrigger}
             />
           </Panel>
         </PanelGroup>

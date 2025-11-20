@@ -10,6 +10,7 @@ interface PreviewPaneProps {
   jsContent: string;
   isPreviewOpen: boolean;
   onTogglePreview: () => void;
+  refreshTrigger?: number;
 }
 
 interface ConsoleMessage {
@@ -40,7 +41,8 @@ const OptimizedPreviewPane = ({
   cssContent,
   jsContent,
   isPreviewOpen,
-  onTogglePreview
+  onTogglePreview,
+  refreshTrigger = 0
 }: PreviewPaneProps) => {
   const [consoleMessages, setConsoleMessages] = useState<ConsoleMessage[]>([]);
   const [forceReloadKey, setForceReloadKey] = useState(0);
@@ -299,6 +301,13 @@ const OptimizedPreviewPane = ({
     setConsoleMessages([]);
     lastContentRef.current = { html: '', css: '', js: '' };
   }, []);
+
+  // Handle external refresh trigger (e.g., from keyboard shortcut)
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      refreshPreview();
+    }
+  }, [refreshTrigger, refreshPreview]);
 
   // Format console message
   const formatConsoleData = useCallback((data: any[]): string => {

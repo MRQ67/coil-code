@@ -19,6 +19,8 @@ import { useAutoSave } from "@/hooks/useAutoSave";
 import UsernamePrompt from "@/components/UsernamePrompt";
 import UserListTooltip from "@/components/editor/UserListTooltip";
 import SaveStatusIndicator from "@/components/editor/SaveStatusIndicator";
+import KeyboardShortcutsModal from "@/components/KeyboardShortcutsModal";
+import CopyRoomLinkButton from "@/components/CopyRoomLinkButton";
 import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 
@@ -296,6 +298,12 @@ export default function EditorPage() {
                 {userCount} {userCount === 1 ? "user" : "users"} online
               </span>
             </div>
+
+            {/* Copy Room Link Button */}
+            <CopyRoomLinkButton roomId={roomId} />
+
+            {/* Keyboard Shortcuts Modal */}
+            <KeyboardShortcutsModal />
 
             {/* Edit Profile Button */}
             <button

@@ -3,15 +3,31 @@
 ## Overview
 This document outlines 4 critical UX improvements for Coil Code based on industry best practices from CodeSandbox, CodePen, StackBlitz, and VS Code.
 
+## Implementation Status
+- ✅ **1. Resizable Panels** - COMPLETED
+- ✅ **2. Keyboard Shortcuts Modal** - COMPLETED
+- ⏳ **3. Enhanced Preview Controls** - TODO
+- ⏳ **4. Layout Mode Switcher** - TODO
+- ✅ **Bonus: Copy Room Link Button** - COMPLETED
+
 ---
 
-## 1. Resizable Panels with Drag Handles 🎯
+## 1. Resizable Panels with Drag Handles ✅ COMPLETED
 
 **Priority:** HIGH - Most requested feature in code editors
 **Effort:** Medium (1-2 hours)
 **Impact:** HIGH - Dramatically improves user flexibility
+**Status:** ✅ Completed on branch `feature/ux-improvements`
 
-### Current State
+### Implementation Summary
+- ✅ Installed `react-resizable-panels@3.0.6`
+- ✅ Replaced fixed-width divs with PanelGroup/Panel components
+- ✅ Added Aceternity-style drag handles with blue hover effect
+- ✅ Implemented panel constraints (File Tree: 10-30%, Editor: 30%+, Preview: 20%+)
+- ✅ Added localStorage persistence via `autoSaveId="coil-code-layout"`
+- ✅ Tested and confirmed working
+
+### Previous State
 - Fixed panel widths: File Tree (15%), Editor (45%), Preview (40%)
 - No way for users to adjust workspace based on their task
 - Wastes screen space for different workflows
@@ -180,13 +196,34 @@ Pass `layout` prop to `EditorLayout` and conditionally render based on mode.
 
 ---
 
-## 3. Keyboard Shortcuts Modal 🎯
+## 2. Keyboard Shortcuts Modal ✅ COMPLETED
 
 **Priority:** MEDIUM
 **Effort:** Medium (2-3 hours)
 **Impact:** HIGH - Improves discoverability
+**Status:** ✅ Completed
 
-### Implementation
+### Implementation Summary
+- ✅ Created `KeyboardShortcutsModal.tsx` with shadcn Dialog component
+- ✅ Implemented keyboard shortcut handlers in `EditorLayout.tsx`
+- ✅ Integrated Monaco Editor's built-in shortcuts (Ctrl+F, Ctrl+H, Alt+↑/↓, Ctrl+/)
+- ✅ Added custom shortcuts:
+  - **Ctrl+B**: Toggle file tree sidebar
+  - **Ctrl+Shift+P**: Toggle preview panel
+  - **Ctrl+R**: Refresh preview (force reload)
+  - **Ctrl+P**: Quick file switcher (cycle HTML → CSS → JS)
+  - **Ctrl+S**: Manual save (already existed)
+- ✅ Modal toggles with Ctrl+/ keyboard shortcut
+- ✅ All shortcuts work with both Ctrl (Windows/Linux) and Cmd (Mac)
+
+### shadcn Components Used
+- ✅ `button` - Trigger button in header
+- ✅ `dialog` - Modal container
+- ✅ `kbd` - Keyboard shortcut display
+- ✅ `badge` - Category badges
+- ✅ `tooltip` - Help tooltips
+
+### Original Implementation Plan
 
 #### Create Component
 **File:** `frontend/components/KeyboardShortcutsModal.tsx`
