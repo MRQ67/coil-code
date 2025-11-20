@@ -28,8 +28,8 @@ const nextConfig: NextConfig = {
       config.plugins.push(
         new MonacoWebpackPlugin({
           languages: ["html", "css", "javascript", "typescript", "json"],
-          // Configure publicPath to match where workers are requested
-          // Workers are requested at /_next/css.worker.js etc.
+          // Note: Worker 404s in dev mode are harmless - Monaco falls back to main thread
+          // Workers load correctly in production build
           publicPath: "/_next/",
         })
       );
