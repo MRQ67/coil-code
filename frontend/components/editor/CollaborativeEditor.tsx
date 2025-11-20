@@ -605,16 +605,34 @@ export default function CollaborativeEditor({
     };
   }, []);
 
-  // Loading state
+  // Loading state with skeleton
   if (isLoading) {
     return (
-      <div className="flex h-full w-full items-center justify-center bg-[#1e1e1e]">
+      <div className="flex h-full w-full flex-col bg-[#1e1e1e] p-4 gap-3">
+        {/* Editor header skeleton */}
+        <div className="flex items-center gap-4 animate-pulse">
+          <div className="h-4 w-32 bg-gray-700 rounded"></div>
+          <div className="h-4 w-24 bg-gray-700 rounded"></div>
+          <div className="ml-auto h-4 w-40 bg-gray-700 rounded"></div>
+        </div>
+
+        {/* Code lines skeleton */}
+        <div className="flex-1 space-y-3 animate-pulse">
+          <div className="h-4 w-3/4 bg-gray-700 rounded"></div>
+          <div className="h-4 w-full bg-gray-700 rounded"></div>
+          <div className="h-4 w-5/6 bg-gray-700 rounded"></div>
+          <div className="h-4 w-2/3 bg-gray-700 rounded"></div>
+          <div className="h-4 w-full bg-gray-700 rounded"></div>
+          <div className="h-4 w-4/5 bg-gray-700 rounded"></div>
+          <div className="h-4 w-1/2 bg-gray-700 rounded"></div>
+          <div className="h-4 w-full bg-gray-700 rounded"></div>
+          <div className="h-4 w-3/4 bg-gray-700 rounded"></div>
+          <div className="h-4 w-5/6 bg-gray-700 rounded"></div>
+        </div>
+
+        {/* Loading text */}
         <div className="text-center">
-          <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
-          <p className="text-lg text-gray-300">Loading editor...</p>
-          <p className="mt-2 text-sm text-gray-500">
-            This may take a moment...
-          </p>
+          <p className="text-sm text-gray-400">Loading Monaco Editor...</p>
         </div>
       </div>
     );

@@ -25,9 +25,10 @@ interface FileTreeProps {
   onFileSelect: (fileType: string) => void;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
+  isLoading?: boolean;
 }
 
-const FileTree = ({ activeFile, onFileSelect, isCollapsed, onToggleCollapse }: FileTreeProps) => {
+const FileTree = ({ activeFile, onFileSelect, isCollapsed, onToggleCollapse, isLoading = false }: FileTreeProps) => {
   const files: FileType[] = [
     { id: 'html', name: 'index.html', type: 'file', icon: '📄' },
     { id: 'css', name: 'style.css', type: 'file', icon: '📄' },
@@ -54,14 +55,25 @@ const FileTree = ({ activeFile, onFileSelect, isCollapsed, onToggleCollapse }: F
       
       {/* File Tree Content */}
       {!isCollapsed && (
-        <motion.div 
+        <motion.div
           initial={{ width: 0 }}
           animate={{ width: '250px' }}
           exit={{ width: 0 }}
           transition={{ duration: 0.3, ease: 'easeInOut' }}
           className="w-[250px] overflow-hidden"
         >
-          <TreeProvider
+          {/* Loading skeleton */}
+          {isLoading ? (
+            <div className="p-2 space-y-2">
+              {[1, 2, 3].map((index) => (
+                <div key={index} className="flex items-center gap-2 px-2 py-1 animate-pulse">
+                  <div className="h-4 w-4 bg-gray-700 rounded"></div>
+                  <div className="h-4 flex-1 bg-gray-700 rounded"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <TreeProvider
             defaultExpandedIds={['root']}
             showIcons={true}
             selectable={true}
@@ -95,6 +107,7 @@ const FileTree = ({ activeFile, onFileSelect, isCollapsed, onToggleCollapse }: F
               ))}
             </TreeView>
           </TreeProvider>
+          )}
         </motion.div>
       )}
       

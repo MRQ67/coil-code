@@ -41,12 +41,24 @@ export default function UserListTooltip({
       ? users.slice(effectiveMaxVisible - 1)
       : [];
 
-  // Loading state
+  // Loading state with skeleton avatars
   if (users.length === 0) {
     return (
-      <div className="flex items-center gap-2">
-        <div className="h-10 w-10 animate-pulse rounded-full bg-gray-700" />
-        <span className="text-sm text-gray-400">Connecting...</span>
+      <div className="flex items-center">
+        {/* Multiple skeleton avatars */}
+        {[1, 2, 3].map((index) => (
+          <div
+            key={index}
+            className="relative h-10 w-10 animate-pulse rounded-full bg-gray-700 ring-2 ring-gray-800"
+            style={{
+              marginLeft: index === 1 ? 0 : -16,
+              zIndex: 4 - index,
+            }}
+          />
+        ))}
+        <span className="ml-4 text-sm text-gray-400 animate-pulse">
+          Connecting...
+        </span>
       </div>
     );
   }

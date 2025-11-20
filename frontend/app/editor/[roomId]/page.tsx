@@ -256,15 +256,32 @@ export default function EditorPage() {
     );
   }
 
-  // Loading state - waiting for Convex data
+  // Loading state - waiting for Convex data with skeleton
   if (!isConnected || !collaborativeDoc || isLoading || (!initialDataLoaded && roomData === undefined)) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-gray-900">
-        <div className="text-center">
-          <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
-          <p className="text-lg text-gray-300">Loading room content...</p>
-          <p className="mt-2 text-sm text-gray-500">Room ID: {roomId}</p>
-        </div>
+      <div className="flex h-screen w-full flex-col bg-[#1E1E1E]">
+        {/* Header skeleton */}
+        <header className="flex items-center justify-between border-b border-[#3C3C3C] bg-[#2D2D30] px-6 py-3">
+          <div className="flex items-center space-x-4 animate-pulse">
+            <div className="h-6 w-32 bg-gray-700 rounded"></div>
+            <div className="h-6 w-20 bg-gray-700 rounded-full"></div>
+            <div className="h-4 w-40 bg-gray-700 rounded"></div>
+          </div>
+          <div className="flex items-center space-x-4 animate-pulse">
+            <div className="h-10 w-10 bg-gray-700 rounded-full"></div>
+            <div className="h-10 w-10 bg-gray-700 rounded-full"></div>
+            <div className="h-10 w-24 bg-gray-700 rounded-lg"></div>
+          </div>
+        </header>
+
+        {/* Content skeleton */}
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
+            <p className="text-lg text-gray-300">Loading room content...</p>
+            <p className="mt-2 text-sm text-gray-500">Room ID: {roomId}</p>
+          </div>
+        </main>
       </div>
     );
   }
