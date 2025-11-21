@@ -34,7 +34,7 @@ const TopBar: React.FC<TopBarProps> = ({
   provider = null
 }) => {
   return (
-    <header className="flex items-center justify-between border-b border-[#3C3C3C] bg-[#2D2D30] px-6 py-3">
+    <header className="flex items-center justify-between border-b border-[#3C3C3C] bg-[#222831] px-6 py-3">
       <div className="flex items-center space-x-4">
         <h1 className="text-lg font-semibold text-white">
           Coil Code Editor

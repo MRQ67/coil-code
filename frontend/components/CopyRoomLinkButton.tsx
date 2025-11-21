@@ -5,7 +5,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { toast } from 'sonner';
 import { Link2, Check } from 'lucide-react';
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface CopyRoomLinkButtonProps {
   roomId: string;
@@ -47,11 +47,11 @@ export default function CopyRoomLinkButton({ roomId }: CopyRoomLinkButtonProps) 
             variant="outline"
             size="sm"
             onClick={handleCopyLink}
-            className="flex items-center gap-2 bg-[#252526] hover:bg-[#2A2D2E] border-[#3C3C3C] text-gray-400 hover:text-white transition-colors group overflow-hidden"
+            className="flex items-center gap-2 bg-[#DFD0B8] hover:bg-[#d0c1a9] dark:bg-[#DFD0B8] dark:hover:bg-[#d0c1a9] border-transparent text-[#222831] hover:text-[#222831] dark:text-[#222831] dark:hover:text-[#222831] transition-colors group overflow-hidden"
           >
             {copied ? (
               <>
-                <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
+                <Check className="w-4 h-4 text-green-700 flex-shrink-0" />
                 <AnimatePresence mode="wait">
                   {expanded && (
                     <motion.span
@@ -59,7 +59,7 @@ export default function CopyRoomLinkButton({ roomId }: CopyRoomLinkButtonProps) 
                       animate={{ width: 'auto', opacity: 1 }}
                       exit={{ width: 0, opacity: 0 }}
                       transition={{ duration: 0.3, ease: 'easeInOut' }}
-                      className="text-green-400 whitespace-nowrap overflow-hidden"
+                      className="text-green-700 whitespace-nowrap overflow-hidden"
                     >
                       Copied!
                     </motion.span>

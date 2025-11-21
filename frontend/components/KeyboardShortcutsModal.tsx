@@ -90,11 +90,11 @@ export default function KeyboardShortcutsModal() {
               <Button
                 variant="outline"
                 size="sm"
-                className="flex items-center gap-2 bg-[#252526] hover:bg-[#2A2D2E] border-[#3C3C3C] text-gray-400 hover:text-white"
+                className="flex items-center gap-2 bg-[#DFD0B8] hover:bg-[#d0c1a9] dark:bg-[#DFD0B8] dark:hover:bg-[#d0c1a9] border-transparent text-[#222831] hover:text-[#222831] dark:text-[#222831] dark:hover:text-[#222831]"
               >
                 <Keyboard className="w-4 h-4" />
                 <span className="hidden md:inline">Shortcuts</span>
-                <Kbd className="hidden md:inline-flex">Ctrl /</Kbd>
+                <Kbd className="hidden md:inline-flex bg-white/20 border-black/10 text-[#222831]">Ctrl /</Kbd>
               </Button>
             </DialogTrigger>
           </TooltipTrigger>

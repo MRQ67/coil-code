@@ -52,10 +52,25 @@ const MultiFileEditor = ({
     js: { name: 'script.js', icon: '📄', language: 'javascript' }
   };
 
+  // Define custom theme before editor mounts
+  const handleEditorWillMount = (monaco: any) => {
+    monaco.editor.defineTheme('coil-dark', {
+      base: 'vs-dark',
+      inherit: true,
+      rules: [{ background: '393E46' }],
+      colors: {
+        'editor.background': '#393E46',
+      },
+    });
+  };
+
   // CRITICAL: Handle editor mount - create models and bindings here
   const handleEditorDidMount = async (editorInstance: editor.IStandaloneCodeEditor, monaco: any) => {
     try {
       editorRef.current = editorInstance;
+      
+      // Force apply theme
+      monaco.editor.setTheme('coil-dark');
 
       if (!provider.awareness) {
         console.error('❌ Provider awareness not available');
@@ -499,7 +514,7 @@ const MultiFileEditor = ({
   return (
     <div className="flex flex-col h-full w-full">
       {/* File indicator */}
-      <div className="h-8 bg-[#2D2D30] px-3 flex items-center text-sm text-[#CCCCCC] border-b border-[#3C3C3C]">
+      <div className="h-8 bg-[#222831] px-3 flex items-center text-sm text-[#CCCCCC] border-b border-[#3C3C3C]">
         <span>{fileConfig[activeFile].icon} {fileConfig[activeFile].name}</span>
       </div>
 
@@ -508,7 +523,8 @@ const MultiFileEditor = ({
         <Editor
           height="100%"
           language={fileConfig[activeFile].language}
-          theme="vs-dark"
+          theme="coil-dark"
+          beforeMount={handleEditorWillMount}
           onMount={handleEditorDidMount}
           options={{
             minimap: { enabled: false },
@@ -526,7 +542,7 @@ const MultiFileEditor = ({
             },
           }}
           loading={
-            <div className="flex h-full items-center justify-center bg-[#1e1e1e]">
+            <div className="flex h-full items-center justify-center bg-[#393E46]">
               <div className="text-center">
                 <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
                 <p className="text-gray-400">Loading editor...</p>
