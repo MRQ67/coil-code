@@ -261,3 +261,129 @@ body {
     background-color: #ff6b6b !important;
     border-left: 2px solid #ff6b6b !important;
 }
+
+/* ============================================
+   SONNER TOAST STYLES
+   Matches VS Code dark theme
+   ============================================ */
+
+[data-sonner-toaster] {
+    --normal-bg: #2D2D30 !important;
+    --normal-text: #CCCCCC !important;
+    --normal-border: #3C3C3C !important;
+    --success-bg: #1E4620 !important;
+    --success-border: #2E7D32 !important;
+    --success-text: #81C784 !important;
+    --error-bg: #5A1D1D !important;
+    --error-border: #D32F2F !important;
+    --error-text: #EF5350 !important;
+    --info-bg: #1E3A5F !important;
+    --info-border: #1976D2 !important;
+    --info-text: #64B5F6 !important;
+    --warning-bg: #4D3800 !important;
+    --warning-border: #F57C00 !important;
+    --warning-text: #FFB74D !important;
+}
+
+[data-sonner-toast] {
+    background: var(--normal-bg) !important;
+    border: 1px solid var(--normal-border) !important;
+    color: var(--normal-text) !important;
+    border-radius: 6px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+    padding: 16px !important;
+    font-family: var(--font-bricolage-grotesque), system-ui, sans-serif !important;
+}
+
+[data-sonner-toast][data-type="success"] {
+    background: var(--success-bg) !important;
+    border-color: var(--success-border) !important;
+}
+
+[data-sonner-toast][data-type="success"] [data-title] {
+    color: var(--success-text) !important;
+    font-weight: 600 !important;
+}
+
+[data-sonner-toast][data-type="success"] [data-description] {
+    color: #A5D6A7 !important;
+}
+
+[data-sonner-toast][data-type="error"] {
+    background: var(--error-bg) !important;
+    border-color: var(--error-border) !important;
+}
+
+[data-sonner-toast][data-type="error"] [data-title] {
+    color: var(--error-text) !important;
+    font-weight: 600 !important;
+}
+
+[data-sonner-toast][data-type="error"] [data-description] {
+    color: #E57373 !important;
+}
+
+[data-sonner-toast][data-type="info"] {
+    background: var(--info-bg) !important;
+    border-color: var(--info-border) !important;
+}
+
+[data-sonner-toast][data-type="info"] [data-title] {
+    color: var(--info-text) !important;
+    font-weight: 600 !important;
+}
+
+[data-sonner-toast][data-type="warning"] {
+    background: var(--warning-bg) !important;
+    border-color: var(--warning-border) !important;
+}
+
+[data-sonner-toast][data-type="warning"] [data-title] {
+    color: var(--warning-text) !important;
+    font-weight: 600 !important;
+}
+
+[data-sonner-toast] [data-title] {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    margin-bottom: 4px !important;
+}
+
+[data-sonner-toast] [data-description] {
+    font-size: 13px !important;
+    opacity: 0.9 !important;
+    line-height: 1.4 !important;
+}
+
+[data-sonner-toast] [data-icon] {
+    margin-right: 12px !important;
+}
+
+[data-sonner-toast] [data-button] {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #CCCCCC !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    padding: 6px 12px !important;
+    border-radius: 4px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+}
+
+[data-sonner-toast] [data-button]:hover {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+[data-sonner-toast] [data-close-button] {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #999999 !important;
+    border: none !important;
+    border-radius: 4px !important;
+    transition: all 0.2s ease !important;
+}
+
+[data-sonner-toast] [data-close-button]:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #CCCCCC !important;
+}

@@ -14,14 +14,23 @@ import type { User } from "@/hooks/usePresence";
 interface UserListTooltipProps {
   users: User[];
   maxVisible?: number; // Default: 5 (show max 5 avatars before "+X more")
+  onEditProfile?: () => void; // Callback for current user avatar click
 }
 
 export default function UserListTooltip({
   users,
   maxVisible = 5,
+  onEditProfile,
 }: UserListTooltipProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [isHoveringMore, setIsHoveringMore] = useState(false);
+
+  // Handle avatar click - only for current user
+  const handleAvatarClick = (user: User) => {
+    if (user.isCurrentUser && onEditProfile) {
+      onEditProfile();
+    }
+  };
 
   // Responsive max visible: 3 on mobile, 5 on desktop
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
@@ -147,9 +156,9 @@ export default function UserListTooltip({
                             </span>
                           )}
                         </div>
-                        {user.isCurrentUser && (
+                        {user.isCurrentUser && onEditProfile && (
                           <div className="text-xs text-gray-400">
-                            Current User
+                            Click to edit profile
                           </div>
                         )}
                       </div>
@@ -165,7 +174,8 @@ export default function UserListTooltip({
               <div
                 className={`relative transition-all duration-200 ${
                   hoveredIndex === index ? "z-40 scale-110" : ""
-                }`}
+                } ${user.isCurrentUser && onEditProfile ? "cursor-pointer" : ""}`}
+                onClick={() => handleAvatarClick(user)}
               >
                 <UserAvatar
                   username={user.username}
@@ -214,7 +224,12 @@ export default function UserListTooltip({
                     {hiddenUsers.map((user) => (
                       <div
                         key={user.clientId}
-                        className="flex items-center gap-2"
+                        className={`flex items-center gap-2 ${
+                          user.isCurrentUser && onEditProfile
+                            ? "cursor-pointer hover:bg-gray-700/50 rounded px-2 py-1 -mx-2"
+                            : ""
+                        }`}
+                        onClick={() => handleAvatarClick(user)}
                       >
                         <UserAvatar
                           username={user.username}

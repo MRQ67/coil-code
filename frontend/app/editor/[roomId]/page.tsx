@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 // Dynamically import EditorLayout to avoid SSR issues with Monaco
@@ -23,9 +23,18 @@ import KeyboardShortcutsModal from "@/components/KeyboardShortcutsModal";
 import CopyRoomLinkButton from "@/components/CopyRoomLinkButton";
 import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function EditorPage() {
   const params = useParams();
+  const router = useRouter();
   const roomId = params?.roomId as string | undefined;
 
   const [collaborativeDoc, setCollaborativeDoc] =
@@ -49,6 +58,9 @@ export default function EditorPage() {
 
   // Local state for modal (for edit profile button)
   const [showEditModal, setShowEditModal] = useState(false);
+
+  // Local state for leave room confirmation dialog
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
 
   // Derive modal state - show if no user info and not loading
   const showModalForNewUser = !isLoadingUser && !userInfo;
@@ -187,6 +199,12 @@ export default function EditorPage() {
     setShowEditModal(false);
   };
 
+  // Handle leave room confirmation
+  const handleLeaveRoom = () => {
+    setShowLeaveDialog(false);
+    router.push('/');
+  };
+
   // Manual save with Cmd+S / Ctrl+S
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -307,49 +325,25 @@ export default function EditorPage() {
 
           <div className="flex items-center space-x-4">
             {/* Real-time User List with Stacked Avatars */}
-            <UserListTooltip users={users} maxVisible={5} />
-
-            {/* User Count Badge */}
-            <div className="rounded-lg bg-[#252526] px-3 py-2">
-              <span className="text-sm text-gray-400">
-                {userCount} {userCount === 1 ? "user" : "users"} online
-              </span>
-            </div>
-
-            {/* Copy Room Link Button */}
-            <CopyRoomLinkButton roomId={roomId} />
+            <UserListTooltip
+              users={users}
+              maxVisible={5}
+              onEditProfile={() => setShowEditModal(true)}
+            />
 
             {/* Keyboard Shortcuts Modal */}
             <KeyboardShortcutsModal />
 
-            {/* Edit Profile Button */}
-            <button
-              onClick={() => setShowEditModal(true)}
-              className="rounded-lg bg-[#252526] px-3 py-2 text-sm text-white transition-colors hover:bg-gray-600"
-              title="Change your profile"
-            >
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                />
-              </svg>
-            </button>
+            {/* Copy Room Link Button */}
+            <CopyRoomLinkButton roomId={roomId} />
 
             {/* Leave Room Button */}
-            <Link
-              href="/"
-              className="rounded-lg bg-[#252526] px-4 py-2 text-sm text-white transition-colors hover:bg-gray-600"
+            <button
+              onClick={() => setShowLeaveDialog(true)}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm text-white transition-colors hover:bg-red-700"
             >
               Leave Room
-            </Link>
+            </button>
           </div>
         </header>
 
@@ -361,6 +355,32 @@ export default function EditorPage() {
           defaultName={userInfo.username}
           defaultGender={userInfo.gender}
         />
+
+        {/* Leave Room Confirmation Dialog */}
+        <Dialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Leave Room?</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to leave this room? Any unsaved changes will be lost.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="gap-2">
+              <button
+                onClick={() => setShowLeaveDialog(false)}
+                className="rounded-lg border border-gray-600 bg-gray-700/50 px-4 py-2 text-sm text-white transition-colors hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleLeaveRoom}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm text-white transition-colors hover:bg-red-700"
+              >
+                Leave Room
+              </button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Multi-file Editor Layout */}
         <main className="flex-1 overflow-hidden">

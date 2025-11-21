@@ -58,13 +58,6 @@ const TopBar: React.FC<TopBarProps> = ({
         {/* Real-time User List with Stacked Avatars */}
         <UserListTooltip users={users} maxVisible={maxVisibleUsers} />
 
-        {/* User Count Badge */}
-        <div className="rounded-lg bg-[#252526] px-3 py-2">
-          <span className="text-sm text-gray-400">
-            {userCount} {userCount === 1 ? "user" : "users"} online
-          </span>
-        </div>
-
         {/* Edit Profile Button */}
         <button
           onClick={onEditProfile}
