@@ -10,6 +10,7 @@ interface PreviewPaneProps {
   jsContent: string;
   isPreviewOpen: boolean;
   onTogglePreview: () => void;
+  refreshTrigger?: number;
 }
 
 interface ConsoleMessage {
@@ -40,7 +41,8 @@ const OptimizedPreviewPane = ({
   cssContent,
   jsContent,
   isPreviewOpen,
-  onTogglePreview
+  onTogglePreview,
+  refreshTrigger = 0
 }: PreviewPaneProps) => {
   const [consoleMessages, setConsoleMessages] = useState<ConsoleMessage[]>([]);
   const [forceReloadKey, setForceReloadKey] = useState(0);
@@ -300,6 +302,13 @@ const OptimizedPreviewPane = ({
     lastContentRef.current = { html: '', css: '', js: '' };
   }, []);
 
+  // Handle external refresh trigger (e.g., from keyboard shortcut)
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      refreshPreview();
+    }
+  }, [refreshTrigger, refreshPreview]);
+
   // Format console message
   const formatConsoleData = useCallback((data: any[]): string => {
     return data.map(d => {
@@ -318,7 +327,7 @@ const OptimizedPreviewPane = ({
   return (
     <div className={`flex flex-col h-full border-l border-[#3C3C3C] ${isPreviewOpen ? 'w-full' : 'w-0'}`}>
       {/* Preview Header */}
-      <div className="h-8 bg-[#2D2D30] px-3 flex items-center justify-between text-sm font-medium text-[#CCCCCC]">
+      <div className="h-8 bg-[#222831] px-3 flex items-center justify-between text-sm font-medium text-[#CCCCCC]">
         <div className="flex items-center gap-3">
           <span>PREVIEW</span>
           {/* Performance indicator */}
@@ -371,8 +380,8 @@ const OptimizedPreviewPane = ({
             </div>
 
             {/* Console Output */}
-            <div className="h-32 border-t border-[#3C3C3C] bg-[#1E1E1E] flex flex-col">
-              <div className="h-6 bg-[#2D2D30] px-3 flex items-center justify-between text-xs font-medium text-[#CCCCCC]">
+            <div className="h-32 border-t border-[#3C3C3C] bg-[#393E46] flex flex-col">
+              <div className="h-6 bg-[#222831] px-3 flex items-center justify-between text-xs font-medium text-[#CCCCCC]">
                 <span>CONSOLE ({consoleMessages.length})</span>
                 <button
                   onClick={clearConsole}
@@ -412,7 +421,7 @@ const OptimizedPreviewPane = ({
           initial={{ height: 0 }}
           animate={{ height: 32 }}
           transition={{ duration: 0.3, ease: 'easeInOut' }}
-          className="h-8 flex items-center justify-center bg-[#2D2D30] cursor-pointer"
+          className="h-8 flex items-center justify-center bg-[#222831] cursor-pointer"
           onClick={onTogglePreview}
         >
           <button className="text-[#CCCCCC] hover:text-white focus:outline-none">

@@ -12,6 +12,16 @@ import {
   type Gender,
 } from "@/lib/name-generator";
 import UserAvatar from "./UserAvatar";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface UsernamePromptProps {
   isOpen: boolean;
@@ -32,17 +42,7 @@ export default function UsernamePrompt({
   const [debouncedName, setDebouncedName] = useState(defaultName);
   const [gender, setGender] = useState<Gender>(defaultGender);
   const [error, setError] = useState<string>("");
-  const inputRef = useRef<HTMLInputElement>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Auto-focus input when modal opens
-  useEffect(() => {
-    if (isOpen && inputRef.current) {
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 100);
-    }
-  }, [isOpen]);
 
   // Debounce name input for avatar preview (300ms delay)
   useEffect(() => {
@@ -115,39 +115,17 @@ export default function UsernamePrompt({
     onGenerateRandom();
   };
 
-  // Prevent closing if no name is set (this is a required field)
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    // Only close if clicking the backdrop, not the modal content
-    if (e.target === e.currentTarget) {
-      // Don't close - username is required
-    }
-  };
-
-  // Don't render if not open
-  if (!isOpen) {
-    return null;
-  }
-
   return (
-    <div
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${
-        isOpen ? "opacity-100" : "opacity-0"
-      }`}
-      onClick={handleBackdropClick}
-    >
-      <div
-        className={`relative w-full max-w-md transform rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 p-8 shadow-2xl transition-all duration-300 ${
-          isOpen ? "scale-100 opacity-100" : "scale-95 opacity-0"
-        } mx-4`}
-        style={{
-          border: "1px solid rgba(255, 255, 255, 0.1)",
-        }}
+    <Dialog open={isOpen} onOpenChange={() => {}}>
+      <DialogContent 
+        className="sm:max-w-md bg-[#222831] border-[#3C3C3C] text-white [&>button]:text-white"
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
       >
-        {/* Header */}
-        <div className="mb-6 text-center">
-          <div className="mb-4 inline-flex items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 p-3">
+        <DialogHeader>
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#DFD0B8]">
             <svg
-              className="h-8 w-8 text-white"
+              className="h-6 w-6 text-[#222831]"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -160,21 +138,21 @@ export default function UsernamePrompt({
               />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-white">Welcome!</h2>
-          <p className="mt-2 text-sm text-gray-400">
+          <DialogTitle className="text-center text-2xl font-bold text-white">Welcome!</DialogTitle>
+          <DialogDescription className="text-center text-gray-400">
             Choose your identity for collaboration
-          </p>
-        </div>
+          </DialogDescription>
+        </DialogHeader>
 
         {/* Live Avatar Preview */}
-        <div className="mb-6 flex justify-center">
-          <div className="relative rounded-xl bg-gray-700/50 p-4">
+        <div className="my-4 flex justify-center">
+          <div className="relative rounded-xl bg-[#393E46] p-4 border border-[#3C3C3C]">
             {debouncedName ? (
               <UserAvatar username={debouncedName} gender={gender} size={80} />
             ) : (
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gray-600">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#222831]">
                 <svg
-                  className="h-10 w-10 text-gray-400"
+                  className="h-10 w-10 text-gray-500"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -190,9 +168,9 @@ export default function UsernamePrompt({
             )}
             {/* Loading indicator when typing */}
             {name !== debouncedName && name.length >= 2 && (
-              <div className="absolute bottom-2 right-2 rounded-full bg-blue-500 p-1">
+              <div className="absolute bottom-2 right-2 rounded-full bg-[#DFD0B8] p-1">
                 <svg
-                  className="h-4 w-4 animate-spin text-white"
+                  className="h-4 w-4 animate-spin text-[#222831]"
                   fill="none"
                   viewBox="0 0 24 24"
                 >
@@ -215,39 +193,36 @@ export default function UsernamePrompt({
           </div>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Name Input */}
-          <div>
-            <label
-              htmlFor="username"
-              className="mb-2 block text-sm font-medium text-gray-300"
-            >
+          <div className="space-y-2">
+            <Label htmlFor="username" className="text-gray-300">
               Your Name
-            </label>
-            <input
-              ref={inputRef}
+            </Label>
+            <Input
               id="username"
               type="text"
               value={name}
               onChange={handleNameChange}
               placeholder="Enter your name..."
-              className={`w-full rounded-lg border ${
-                error ? "border-red-500" : "border-gray-600"
-              } bg-gray-700 px-4 py-3 text-white placeholder-gray-400 transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50`}
+              className={`bg-[#393E46] border-[#3C3C3C] text-white placeholder-gray-500 focus-visible:ring-[#DFD0B8] ${
+                error ? "border-red-500 focus-visible:ring-red-500" : ""
+              }`}
               maxLength={20}
+              autoFocus
             />
-            {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
-            <p className="mt-1 text-xs text-gray-500">
-              {name.length}/20 characters
-            </p>
+            {error ? (
+              <p className="text-sm text-red-400">{error}</p>
+            ) : (
+              <p className="text-xs text-gray-500 text-right">
+                {name.length}/20 characters
+              </p>
+            )}
           </div>
 
           {/* Gender Selection */}
-          <div>
-            <label className="mb-3 block text-sm font-medium text-gray-300">
-              Avatar Style
-            </label>
+          <div className="space-y-2">
+            <Label className="text-gray-300">Avatar Style</Label>
             <div className="grid grid-cols-3 gap-3">
               {/* Boy Option */}
               <button
@@ -255,12 +230,12 @@ export default function UsernamePrompt({
                 onClick={() => handleGenderChange("boy")}
                 className={`flex flex-col items-center justify-center rounded-lg border-2 p-4 transition-all ${
                   gender === "boy"
-                    ? "border-blue-500 bg-blue-500/20"
-                    : "border-gray-600 bg-gray-700/50 hover:border-gray-500"
+                    ? "border-[#DFD0B8] bg-[#DFD0B8]/10 text-[#DFD0B8]"
+                    : "border-[#3C3C3C] bg-[#393E46] text-gray-400 hover:border-gray-500 hover:bg-[#2D2D30]"
                 }`}
               >
                 <span className="mb-2 text-2xl">👦</span>
-                <span className="text-xs font-medium text-white">Boy</span>
+                <span className="text-xs font-medium">Boy</span>
               </button>
 
               {/* Girl Option */}
@@ -269,12 +244,12 @@ export default function UsernamePrompt({
                 onClick={() => handleGenderChange("girl")}
                 className={`flex flex-col items-center justify-center rounded-lg border-2 p-4 transition-all ${
                   gender === "girl"
-                    ? "border-pink-500 bg-pink-500/20"
-                    : "border-gray-600 bg-gray-700/50 hover:border-gray-500"
+                    ? "border-[#DFD0B8] bg-[#DFD0B8]/10 text-[#DFD0B8]"
+                    : "border-[#3C3C3C] bg-[#393E46] text-gray-400 hover:border-gray-500 hover:bg-[#2D2D30]"
                 }`}
               >
                 <span className="mb-2 text-2xl">👧</span>
-                <span className="text-xs font-medium text-white">Girl</span>
+                <span className="text-xs font-medium">Girl</span>
               </button>
 
               {/* Random Option */}
@@ -283,12 +258,12 @@ export default function UsernamePrompt({
                 onClick={() => handleGenderChange("random")}
                 className={`flex flex-col items-center justify-center rounded-lg border-2 p-4 transition-all ${
                   gender === "random"
-                    ? "border-purple-500 bg-purple-500/20"
-                    : "border-gray-600 bg-gray-700/50 hover:border-gray-500"
+                    ? "border-[#DFD0B8] bg-[#DFD0B8]/10 text-[#DFD0B8]"
+                    : "border-[#3C3C3C] bg-[#393E46] text-gray-400 hover:border-gray-500 hover:bg-[#2D2D30]"
                 }`}
               >
                 <span className="mb-2 text-2xl">🎲</span>
-                <span className="text-xs font-medium text-white">Random</span>
+                <span className="text-xs font-medium">Random</span>
               </button>
             </div>
           </div>
@@ -296,55 +271,28 @@ export default function UsernamePrompt({
           {/* Action Buttons */}
           <div className="flex flex-col gap-3 pt-2">
             {/* Continue Button */}
-            <button
+            <Button
               type="submit"
-              className="group relative flex items-center justify-center overflow-hidden rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-blue-500/50"
+              className="w-full bg-[#DFD0B8] text-[#222831] hover:bg-[#d0c1a9] font-semibold h-11"
             >
-              <span className="flex items-center space-x-2">
-                <span>Continue</span>
-                <svg
-                  className="h-5 w-5 transition-transform group-hover:translate-x-1"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 7l5 5m0 0l-5 5m5-5H6"
-                  />
-                </svg>
-              </span>
-            </button>
+              Continue
+            </Button>
 
             {/* Random Name Button */}
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={handleRandomName}
-              className="flex items-center justify-center space-x-2 rounded-lg border border-gray-600 bg-gray-700/50 px-6 py-3 font-medium text-gray-300 transition-all hover:border-gray-500 hover:bg-gray-700"
+              className="w-full border-[#3C3C3C] bg-[#393E46] text-gray-300 hover:bg-[#2D2D30] hover:text-white"
             >
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
-                />
-              </svg>
-              <span>✨ Random Name</span>
-            </button>
+              ✨ Random Name
+            </Button>
 
             {/* Skip Button */}
             <button
               type="button"
               onClick={handleSkip}
-              className="text-sm text-gray-400 transition-colors hover:text-gray-300"
+              className="text-sm text-gray-500 transition-colors hover:text-[#DFD0B8] hover:underline"
             >
               Skip for now (auto-generate)
             </button>
@@ -352,12 +300,12 @@ export default function UsernamePrompt({
         </form>
 
         {/* Footer Info */}
-        <div className="mt-6 text-center">
-          <p className="text-xs text-gray-500">
+        <div className="mt-2 text-center">
+          <p className="text-xs text-gray-600">
             🔒 Your info is saved locally on this device
           </p>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
