@@ -1,0 +1,32 @@
+⨯ ./components/UsernamePrompt.tsx
+Error:   × Expression expected
+     ╭─[D:\coilcode\frontend\components\UsernamePrompt.tsx:312:1]
+ 309 │     </Dialog>
+ 310 │   );
+ 311 │ }
+ 312 │ }
+     · ─
+     ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./components/UsernamePrompt.tsx
+./app/editor/[roomId]/page.tsx
+ ⨯ ./components/UsernamePrompt.tsx
+Error:   × Expression expected
+     ╭─[D:\coilcode\frontend\components\UsernamePrompt.tsx:312:1]
+ 309 │     </Dialog>
+ 310 │   );
+ 311 │ }
+ 312 │ }
+     · ─
+     ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./components/UsernamePrompt.tsx
+./app/editor/[roomId]/page.tsx

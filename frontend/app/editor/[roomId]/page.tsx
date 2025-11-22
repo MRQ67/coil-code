@@ -73,6 +73,8 @@ export default function EditorPage() {
   // Track all connected users in real-time
   const { users, userCount } = usePresence(collaborativeDoc?.provider || null);
 
+  console.log("EditorPage mounted, roomId:", roomId);
+
   useEffect(() => {
     // Prevent double initialization in strict mode
     if (isInitializing.current) {
