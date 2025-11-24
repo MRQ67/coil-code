@@ -57,9 +57,9 @@ const MultiFileEditor = ({
     monaco.editor.defineTheme('coil-dark', {
       base: 'vs-dark',
       inherit: true,
-      rules: [{ background: '393E46' }],
+      rules: [{ background: '1E1E1E' }],
       colors: {
-        'editor.background': '#393E46',
+        'editor.background': '#1E1E1E',
       },
     });
   };
@@ -542,7 +542,7 @@ const MultiFileEditor = ({
             },
           }}
           loading={
-            <div className="flex h-full items-center justify-center bg-[#393E46]">
+            <div className="flex h-full items-center justify-center bg-[#1E1E1E]">
               <div className="text-center">
                 <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
                 <p className="text-gray-400">Loading editor...</p>
