@@ -328,12 +328,13 @@ export default function HomePage() {
           >
             {/* App Video */}
             <div className="relative rounded-xl shadow-2xl w-full md:w-4/5 overflow-hidden border-4 border-card aspect-video">
-              <iframe
-                src="https://phia.app/share/fbcfdc20-887f-4819-9d67-6ea2d0352d00"
-                className="w-full h-full"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
+              <video
+                src="/video/Coil_code_demo.mp4"
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="w-full h-full object-cover"
                 title="Coil Code Editor Demo"
               />
             </div>
