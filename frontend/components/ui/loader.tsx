@@ -167,16 +167,15 @@ export const LoaderFour = ({ text = "Loading..." }: { text?: string }) => {
     <div className="relative font-bold text-black [perspective:1000px] dark:text-white">
       <motion.span
         animate={{
-          skew: [0, -40, 0],
+          rotateX: [0, -40, 0],
           scaleX: [1, 2, 1],
         }}
         transition={{
           duration: 0.05,
           repeat: Infinity,
-          repeatType: "reverse",
+          repeatType: "reverse" as const,
           repeatDelay: 2,
-          ease: "linear",
-          times: [0, 0.2, 0.5, 0.8, 1],
+          ease: "linear" as const,
         }}
         className="relative z-20 inline-block"
       >
@@ -192,9 +191,8 @@ export const LoaderFour = ({ text = "Loading..." }: { text?: string }) => {
         transition={{
           duration: 0.5,
           repeat: Infinity,
-          repeatType: "reverse",
-          ease: "linear",
-          times: [0, 0.2, 0.5, 0.8, 1],
+          repeatType: "reverse" as const,
+          ease: "linear" as const,
         }}
       >
         {text}
@@ -209,9 +207,8 @@ export const LoaderFour = ({ text = "Loading..." }: { text?: string }) => {
         transition={{
           duration: 0.8,
           repeat: Infinity,
-          repeatType: "reverse",
-          ease: "linear",
-          times: [0, 0.3, 0.6, 0.8, 1],
+          repeatType: "reverse" as const,
+          ease: "linear" as const,
         }}
       >
         {text}
@@ -230,19 +227,19 @@ export const LoaderFive = ({ text }: { text: string }) => {
           initial={{ scale: 1, opacity: 0.5 }}
           animate={{
             scale: [1, 1.1, 1],
-            textShadow: [
-              "0 0 0 var(--shadow-color)",
-              "0 0 1px var(--shadow-color)",
-              "0 0 0 var(--shadow-color)",
+            filter: [
+              `drop-shadow(0 0 0 var(--shadow-color))`,
+              `drop-shadow(0 0 1px var(--shadow-color))`,
+              `drop-shadow(0 0 0 var(--shadow-color))`,
             ],
             opacity: [0.5, 1, 0.5],
           }}
           transition={{
             duration: 0.5,
             repeat: Infinity,
-            repeatType: "loop",
+            repeatType: "loop" as const,
             delay: i * 0.05,
-            ease: "easeInOut",
+            ease: "easeInOut" as const,
             repeatDelay: 2,
           }}
         >
