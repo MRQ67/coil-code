@@ -326,15 +326,15 @@ export default function HomePage() {
             variants={itemVariants}
             className="order-first md:order-last -mt-8 translate-x-10 md:translate-x-20 lg:translate-x-26"
           >
-            {/* App Screenshot */}
-            <div className="relative rounded-xl shadow-2xl w-full md:w-4/5 overflow-hidden border-4 border-card">
-              <Image
-                src="/screenshots/monaco.png"
-                alt="Coil Code Editor Interface"
-                width={800}
-                height={600}
-                className="w-full h-auto"
-                priority
+            {/* App Video */}
+            <div className="relative rounded-xl shadow-2xl w-full md:w-4/5 overflow-hidden border-4 border-card aspect-video">
+              <iframe
+                src="https://phia.app/share/fbcfdc20-887f-4819-9d67-6ea2d0352d00"
+                className="w-full h-full"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                title="Coil Code Editor Demo"
               />
             </div>
           </motion.div>
