@@ -324,10 +324,10 @@ export default function HomePage() {
             initial="hidden"
             animate="visible"
             variants={itemVariants}
-            className="order-first md:order-last -mt-8 translate-x-10 md:translate-x-20 lg:translate-x-26"
+            className="order-first md:order-last -mt-8 -translate-x-4 md:translate-x-4 lg:translate-x-6"
           >
             {/* App Video */}
-            <div className="relative rounded-xl shadow-2xl w-full md:w-4/5 overflow-hidden border-4 border-card aspect-video">
+            <div className="relative rounded-xl shadow-2xl w-full md:w-11/12 lg:w-11/12 overflow-hidden border-4 border-card aspect-video">
               <video
                 src="/video/Coil_code_demo.mp4"
                 autoPlay
