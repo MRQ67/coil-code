@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { nanoid } from "nanoid";
+import { nanoid } from "nanoid"; // eslint-disable-line @typescript-eslint/no-unused-vars
 import Image from "next/image";
+import { motion } from "framer-motion"; // Import motion
+
 import RoomCodeDialog from "@/components/RoomCodeDialog";
 import {
   Glimpse,
@@ -22,24 +24,37 @@ export default function HomePage() {
   const createNewRoom = () => {
     router.push(`/editor/${nanoid(10)}`);
   };
-
   const joinRoom = (e: React.FormEvent) => {
     e.preventDefault();
     if (roomCode.trim()) router.push(`/editor/${roomCode.trim()}`);
   };
-
   const handleJoinRoom = (code: string) => {
     router.push(`/editor/${code}`);
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
+  };
+
   return (
-    <main className="min-h-screen bg-[#222831] relative overflow-hidden">
+    <main className="min-h-screen bg-background relative overflow-hidden">
       {/* Decorative Blobs */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-[#DFD0B8] rounded-full opacity-10 blur-3xl -translate-y-1/2 translate-x-1/2 -z-10" />
-      <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#DFD0B8] rounded-full opacity-10 blur-3xl translate-y-1/2 -translate-x-1/2 -z-10" />
+      <div className="absolute top-0 right-0 w-96 h-96 bg-primary rounded-full opacity-10 blur-3xl -translate-y-1/2 translate-x-1/2 -z-10" />
+      <div className="absolute bottom-0 left-0 w-80 h-80 bg-primary rounded-full opacity-10 blur-3xl translate-y-1/2 -translate-x-1/2 -z-10" />
 
       {/* Background for right side with #393E46 extending until footer */}
-      <div className="absolute top-0 right-0 w-1/2 h-full bg-[#393E46] z-0 rounded-l-3xl"></div>
+      <div className="absolute top-0 right-0 w-1/2 h-full bg-card z-0 rounded-l-3xl"></div>
 
       <div className="relative z-10 container mx-auto px-6 md:px-12 py-8">
         {/* Header: Logo left, GitHub right */}
@@ -57,12 +72,14 @@ export default function HomePage() {
 
           {/* GitHub button */}
           <div className="text-center">
-            <p className="text-[#948979] text-sm mb-2">check it out in</p>
+            <p className="text-muted-foreground text-sm mb-2">
+              check it out in
+            </p>
             <a
               href="https://github.com/MRQ67/coil-code"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center space-x-2 bg-[#DFD0B8] text-[#222831] px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-all duration-200"
+              className="inline-flex items-center space-x-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-all duration-200"
             >
               <Image
                 src="/soical_icons/github-142-svgrepo-com.svg"
@@ -78,10 +95,18 @@ export default function HomePage() {
 
         {/* Hero: 50/50 grid */}
         <div className="grid md:grid-cols-[50%_50%] gap-4 items-center min-h-[30vh]">
-          <div className="space-y-1">
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+            className="space-y-1"
+          >
             {/* Hero text */}
             <div className="space-y-3">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
+              <motion.h1
+                variants={itemVariants}
+                className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight"
+              >
                 Coil Code{" "}
                 <Image
                   src="/inline_logo.svg"
@@ -121,9 +146,12 @@ export default function HomePage() {
                     </GlimpseDescription>
                   </GlimpseContent>
                 </Glimpse>
-              </h1>
+              </motion.h1>
 
-              <div className="text-lg md:text-xl text-white space-y-2">
+              <motion.div
+                variants={itemVariants}
+                className="text-lg md:text-xl text-white space-y-2"
+              >
                 <p className="flex items-center flex-wrap gap-2">
                   Built using{" "}
                   <Glimpse>
@@ -157,7 +185,10 @@ export default function HomePage() {
                       </GlimpseDescription>
                     </GlimpseContent>
                   </Glimpse>
-                  <span className="text-[#948979] text-sm">(frontend)</span>,{" "}
+                  <span className="text-muted-foreground text-sm">
+                    (frontend)
+                  </span>
+                  ,{" "}
                   <Glimpse>
                     <GlimpseTrigger asChild>
                       <a
@@ -189,7 +220,7 @@ export default function HomePage() {
                       </GlimpseDescription>
                     </GlimpseContent>
                   </Glimpse>
-                  <span className="text-[#948979] text-sm">
+                  <span className="text-muted-foreground text-sm">
                     (synchronization)
                   </span>
                   ,{" "}
@@ -224,8 +255,10 @@ export default function HomePage() {
                       </GlimpseDescription>
                     </GlimpseContent>
                   </Glimpse>
-                  <span className="text-[#948979] text-sm">(backend)</span>, and
-                  it is -{" "}
+                  <span className="text-muted-foreground text-sm">
+                    (backend)
+                  </span>
+                  , and it is -{" "}
                   <Glimpse>
                     <GlimpseTrigger asChild>
                       <a
@@ -254,48 +287,63 @@ export default function HomePage() {
                   </Glimpse>
                   .
                 </p>
-              </div>
+              </motion.div>
             </div>
 
             {/* Action buttons - side by side */}
-            <div className="flex items-center justify-start space-x-4 mt-6">
+            <motion.div
+              variants={itemVariants}
+              className="flex items-center justify-start space-x-4 mt-6"
+            >
               {/* Create Room button */}
               <button
                 onClick={createNewRoom}
-                className="bg-[#DFD0B8] text-[#222831] px-8 py-2 rounded-xl text-lg font-semibold hover:transform hover:scale-105 hover:shadow-lg transition-all duration-200 flex items-center space-x-2 w-fit"
+                className="bg-primary text-primary-foreground px-8 py-2 rounded-xl text-lg font-semibold hover:transform hover:scale-105 hover:shadow-lg transition-all duration-200 flex items-center space-x-2 w-fit"
               >
                 <span>Create New Room</span>
                 <span>→</span>
               </button>
 
               {/* "or" text */}
-              <span className="text-[#948979] text-sm font-medium">or</span>
+              <span className="text-muted-foreground text-sm font-medium">
+                or
+              </span>
 
               {/* Join room button */}
               <button
                 onClick={() => setIsDialogOpen(true)}
-                className="bg-[#948979] text-white px-8 py-2 rounded-xl text-lg font-semibold hover:transform hover:scale-105 hover:shadow-lg transition-all duration-200 flex items-center space-x-2 w-fit"
+                className="bg-muted text-white px-8 py-2 rounded-xl text-lg font-semibold hover:transform hover:scale-105 hover:shadow-lg transition-all duration-200 flex items-center space-x-2 w-fit"
               >
                 <span>Join Room</span>
                 <span>→</span>
               </button>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
-          <div className="order-first md:order-last -mt-8 translate-x-26">
-            {/* Video placeholder */}
-            <div className="bg-[#948979] rounded-xl aspect-4/3 shadow-2xl flex items-center justify-center w-4/5">
-              <div className="text-white text-lg font-medium opacity-50">
-                Demo Video Coming Soon
-              </div>
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={itemVariants}
+            className="order-first md:order-last -mt-8 translate-x-10 md:translate-x-20 lg:translate-x-26"
+          >
+            {/* App Screenshot */}
+            <div className="relative rounded-xl shadow-2xl w-full md:w-4/5 overflow-hidden border-4 border-card">
+              <Image
+                src="/screenshots/monaco.png"
+                alt="Coil Code Editor Interface"
+                width={800}
+                height={600}
+                className="w-full h-auto"
+                priority
+              />
             </div>
-          </div>
+          </motion.div>
         </div>
 
         {/* Footer: Copyright left, socials right */}
         <footer className="mt-16 flex flex-col md:flex-row justify-between items-center gap-4 pt-8">
           {/* Copyright */}
-          <p className="text-white text-sm">
+          <p className="text-foreground text-sm">
             © 2025 Coil Code by AA³. All rights reserved
           </p>
 

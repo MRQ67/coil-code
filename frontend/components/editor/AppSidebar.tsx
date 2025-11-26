@@ -45,15 +45,15 @@ export function AppSidebar({
   ] as const;
 
   return (
-    <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader className="h-[72px] border-b border-[#3C3C3C] flex items-center justify-center group-data-[collapsible=icon]:px-0">
+    <Sidebar collapsible="icon" className="bg-card" {...props}>
+      <SidebarHeader className="h-[72px] border-b border-border bg-card flex items-center justify-center group-data-[collapsible=icon]:px-0">
         <div className="flex items-center gap-2 group-data-[collapsible=icon]:hidden">
           <img
             src="/inline_logo.svg"
             alt="Coil Code Logo"
             className="w-auto h-5"
           />
-          <span className="font-semibold text-[#CCCCCC]">Coil Code Editor</span>
+          <span className="font-semibold text-foreground">Coil Code Editor</span>
         </div>
         <div className="hidden group-data-[collapsible=icon]:block">
           <img
@@ -63,20 +63,20 @@ export function AppSidebar({
           />
         </div>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="bg-card">
         <SidebarGroup>
-          <SidebarGroupLabel>Files</SidebarGroupLabel>
-          <SidebarGroupContent>
+          <SidebarGroupLabel className="text-foreground">Files</SidebarGroupLabel>
+          <SidebarGroupContent className="bg-card">
             <SidebarMenu>
               {files.map((file) => (
                 <SidebarMenuItem key={file.id}>
                   <SidebarMenuButton
+                    className="data-[active=true]:bg-muted"
                     onClick={() => onFileSelect(file.id)}
                     isActive={activeFile === file.id}
-                    className="data-[active=true]:bg-[#393E46] data-[active=true]:text-white hover:bg-[#948979] hover:text-white"
                   >
                     <file.icon className={file.color} />
-                    <span>{file.name}</span>
+                    <span className="text-foreground">{file.name}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

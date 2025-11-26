@@ -101,7 +101,7 @@ const EditorLayout = ({
           defaultSize={60}
           minSize={30}
         >
-          <div className="flex flex-col h-full border-r border-[#3C3C3C] relative">
+          <div className="flex flex-col h-full border-r border-border relative">
             <MultiFileEditor
               ydoc={ydoc}
               provider={provider}
@@ -114,8 +114,8 @@ const EditorLayout = ({
         </Panel>
 
         {/* Drag Handle */}
-        <PanelResizeHandle className="w-1 bg-[#3C3C3C] hover:bg-blue-500 transition-colors duration-200 relative group">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-12 rounded-full bg-blue-500/0 group-hover:bg-blue-500 transition-all duration-200" />
+        <PanelResizeHandle className="w-1 bg-border hover:bg-primary transition-colors duration-200 relative group">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-12 rounded-full bg-primary/0 group-hover:bg-primary transition-all duration-200" />
         </PanelResizeHandle>
 
         {/* Preview Panel */}

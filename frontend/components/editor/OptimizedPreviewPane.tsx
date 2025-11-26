@@ -327,12 +327,12 @@ const OptimizedPreviewPane = ({
   return (
     <div className={`flex flex-col h-full border-l border-[#3C3C3C] ${isPreviewOpen ? 'w-full' : 'w-0'}`}>
       {/* Preview Header */}
-      <div className="h-8 bg-[#222831] px-3 flex items-center justify-between text-sm font-medium text-[#CCCCCC]">
+      <div className="h-8 bg-card px-3 flex items-center justify-between text-sm font-medium text-foreground">
         <div className="flex items-center gap-3">
           <span>PREVIEW</span>
           {/* Performance indicator */}
           {metrics.totalUpdates > 0 && (
-            <span className="text-xs text-[#6E6E6E]" title={`Avg: ${metrics.averageUpdateTime.toFixed(1)}ms`}>
+            <span className="text-xs text-muted-foreground" title={`Avg: ${metrics.averageUpdateTime.toFixed(1)}ms`}>
               {metrics.lastUpdateTime.toFixed(0)}ms
             </span>
           )}
@@ -340,7 +340,7 @@ const OptimizedPreviewPane = ({
         <div className="flex gap-2">
           <button
             onClick={refreshPreview}
-            className="text-[#CCCCCC] hover:text-white focus:outline-none"
+            className="text-foreground hover:text-foreground/80 focus:outline-none"
             aria-label="Refresh preview"
             title="Force full reload"
           >
@@ -348,7 +348,7 @@ const OptimizedPreviewPane = ({
           </button>
           <button
             onClick={onTogglePreview}
-            className="text-[#CCCCCC] hover:text-white focus:outline-none"
+            className="text-foreground hover:text-foreground/80 focus:outline-none"
             aria-label={isPreviewOpen ? "Collapse preview" : "Expand preview"}
           >
             ×
@@ -380,12 +380,12 @@ const OptimizedPreviewPane = ({
             </div>
 
             {/* Console Output */}
-            <div className="h-32 border-t border-[#3C3C3C] bg-[#393E46] flex flex-col">
-              <div className="h-6 bg-[#222831] px-3 flex items-center justify-between text-xs font-medium text-[#CCCCCC]">
+            <div className="h-32 border-t border-border bg-muted flex flex-col">
+              <div className="h-6 bg-card px-3 flex items-center justify-between text-xs font-medium text-foreground">
                 <span>CONSOLE ({consoleMessages.length})</span>
                 <button
                   onClick={clearConsole}
-                  className="text-[#CCCCCC] hover:text-white focus:outline-none"
+                  className="text-foreground hover:text-foreground/80 focus:outline-none"
                   aria-label="Clear console"
                 >
                   Clear
@@ -421,10 +421,10 @@ const OptimizedPreviewPane = ({
           initial={{ height: 0 }}
           animate={{ height: 32 }}
           transition={{ duration: 0.3, ease: 'easeInOut' }}
-          className="h-8 flex items-center justify-center bg-[#222831] cursor-pointer"
+          className="h-8 flex items-center justify-center bg-card cursor-pointer border-l border-border"
           onClick={onTogglePreview}
         >
-          <button className="text-[#CCCCCC] hover:text-white focus:outline-none">
+          <button className="text-foreground hover:text-foreground/80 focus:outline-none">
             Preview
           </button>
         </motion.div>

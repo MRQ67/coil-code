@@ -6,6 +6,7 @@ import type YPartyKitProvider from 'y-partykit/provider';
 // MonacoBinding is imported dynamically to avoid SSR issues
 import type { editor } from 'monaco-editor';
 import Editor from '@monaco-editor/react';
+import { LoaderThree } from '@/components/ui/loader';
 
 interface MultiFileEditorProps {
   ydoc: Y.Doc;
@@ -163,8 +164,8 @@ const MultiFileEditor = ({
               forceRefreshColors,
             },
           ]) => {
-            // Expose debug functions globally
-            if (typeof window !== 'undefined') {
+            // Expose debug functions globally (DEV only)
+            if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
               (window as any).provider = provider;
               (window as any).debugCursors = () => debugCursors(provider);
               (window as any).quickCursorCheck = () => quickCursorCheck(provider);
@@ -244,8 +245,8 @@ const MultiFileEditor = ({
 
             console.log('========================================');
 
-            // Expose color application function globally
-            if (typeof window !== 'undefined') {
+            // Expose color application function globally (DEV only)
+            if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
               const applyCursorColors = () => {
                 if (!provider?.awareness) return;
 
@@ -514,7 +515,7 @@ const MultiFileEditor = ({
   return (
     <div className="flex flex-col h-full w-full">
       {/* File indicator */}
-      <div className="h-8 bg-[#222831] px-3 flex items-center text-sm text-[#CCCCCC] border-b border-[#3C3C3C]">
+      <div className="h-8 bg-card px-3 flex items-center text-sm text-foreground border-b border-border">
         <span>{fileConfig[activeFile].icon} {fileConfig[activeFile].name}</span>
       </div>
 
@@ -542,10 +543,12 @@ const MultiFileEditor = ({
             },
           }}
           loading={
-            <div className="flex h-full items-center justify-center bg-[#1E1E1E]">
+            <div className="flex h-full items-center justify-center bg-background">
               <div className="text-center">
-                <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
-                <p className="text-gray-400">Loading editor...</p>
+                <div className="flex justify-center mb-4">
+                  <LoaderThree />
+                </div>
+                <p className="text-muted-foreground">Loading editor...</p>
               </div>
             </div>
           }

@@ -23,6 +23,7 @@ import KeyboardShortcutsModal from "@/components/KeyboardShortcutsModal";
 import CopyRoomLinkButton from "@/components/CopyRoomLinkButton";
 import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Dialog,
   DialogContent,
@@ -33,6 +34,7 @@ import {
 } from "@/components/ui/dialog";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/editor/AppSidebar";
+import { LoaderThree } from "@/components/ui/loader";
 
 export default function EditorPage() {
   const params = useParams();
@@ -72,8 +74,45 @@ export default function EditorPage() {
 
   // Track all connected users in real-time
   const { users, userCount } = usePresence(collaborativeDoc?.provider || null);
+  const isMobile = useIsMobile();
 
   console.log("EditorPage mounted, roomId:", roomId);
+
+  if (isMobile) {
+    return (
+      <div className="flex h-screen w-full flex-col items-center justify-center bg-background p-6 text-center">
+        <div className="mb-6 rounded-full bg-card p-6">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-blue-400"
+          >
+            <rect width="20" height="14" x="2" y="3" rx="2" />
+            <line x1="8" x2="16" y1="21" y2="21" />
+            <line x1="12" x2="12" y1="17" y2="21" />
+          </svg>
+        </div>
+        <h2 className="mb-2 text-2xl font-bold text-foreground">Desktop Optimized</h2>
+        <p className="text-muted-foreground max-w-xs mx-auto">
+          Coil Code is designed for a rich coding experience on larger screens.
+          Please visit us on a desktop or laptop.
+        </p>
+        <Link
+          href="/"
+          className="mt-8 inline-block rounded-lg bg-card border border-border px-6 py-2 text-sm text-foreground transition-colors hover:bg-card/80"
+        >
+          Back to Home
+        </Link>
+      </div>
+    );
+  }
 
   useEffect(() => {
     // Prevent double initialization in strict mode
@@ -233,15 +272,15 @@ export default function EditorPage() {
   // Invalid room ID
   if (!roomId) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-gray-900">
-        <div className="max-w-md rounded-lg border border-red-500/50 bg-red-900/20 p-6 text-center">
-          <h2 className="mb-2 text-xl font-semibold text-red-400">
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <div className="max-w-md rounded-lg border border-destructive/50 bg-destructive/20 p-6 text-center">
+          <h2 className="mb-2 text-xl font-semibold text-destructive">
             Invalid Room
           </h2>
-          <p className="text-gray-300">The room ID is invalid or missing.</p>
+          <p className="text-muted-foreground">The room ID is invalid or missing.</p>
           <Link
             href="/"
-            className="mt-4 inline-block rounded-lg bg-blue-600 px-6 py-2 text-white transition-colors hover:bg-blue-700"
+            className="mt-4 inline-block rounded-lg bg-primary px-6 py-2 text-primary-foreground transition-colors hover:bg-primary/90"
           >
             Back to Home
           </Link>
@@ -253,10 +292,12 @@ export default function EditorPage() {
   // Show loading while checking user info
   if (isLoadingUser) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-gray-900">
+      <div className="flex h-screen w-full items-center justify-center bg-background">
         <div className="text-center">
-          <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
-          <p className="text-lg text-gray-300">Loading...</p>
+          <div className="flex justify-center mb-4">
+            <LoaderThree />
+          </div>
+          <p className="text-lg text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
@@ -271,10 +312,10 @@ export default function EditorPage() {
           onSave={handleUsernameSave}
           onGenerateRandom={handleGenerateRandom}
         />
-        <div className="flex h-screen w-full items-center justify-center bg-gray-900">
+        <div className="flex h-screen w-full items-center justify-center bg-background">
           <div className="text-center">
-            <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
-            <p className="text-lg text-gray-300">Setting up your profile...</p>
+            <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
+            <p className="text-lg text-muted-foreground">Setting up your profile...</p>
           </div>
         </div>
       </>
@@ -284,27 +325,29 @@ export default function EditorPage() {
   // Loading state - waiting for Convex data with skeleton
   if (!isConnected || !collaborativeDoc || isLoading || (!initialDataLoaded && roomData === undefined)) {
     return (
-      <div className="flex h-screen w-full flex-col bg-[#1E1E1E]">
+      <div className="flex h-screen w-full flex-col bg-background">
         {/* Header skeleton */}
-        <header className="flex items-center justify-between border-b border-[#3C3C3C] bg-[#2D2D30] px-6 py-3">
+        <header className="flex items-center justify-between border-b border-border bg-card px-6 py-3">
           <div className="flex items-center space-x-4 animate-pulse">
-            <div className="h-6 w-32 bg-gray-700 rounded"></div>
-            <div className="h-6 w-20 bg-gray-700 rounded-full"></div>
-            <div className="h-4 w-40 bg-gray-700 rounded"></div>
+            <div className="h-6 w-32 bg-muted rounded"></div>
+            <div className="h-6 w-20 bg-muted rounded-full"></div>
+            <div className="h-4 w-40 bg-muted rounded"></div>
           </div>
           <div className="flex items-center space-x-4 animate-pulse">
-            <div className="h-10 w-10 bg-gray-700 rounded-full"></div>
-            <div className="h-10 w-10 bg-gray-700 rounded-full"></div>
-            <div className="h-10 w-24 bg-gray-700 rounded-lg"></div>
+            <div className="h-10 w-10 bg-muted rounded-full"></div>
+            <div className="h-10 w-10 bg-muted rounded-full"></div>
+            <div className="h-10 w-24 bg-muted rounded-lg"></div>
           </div>
         </header>
 
         {/* Content skeleton */}
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
-            <p className="text-lg text-gray-300">Loading room content...</p>
-            <p className="mt-2 text-sm text-gray-500">Room ID: {roomId}</p>
+            <div className="flex justify-center mb-4">
+              <LoaderThree />
+            </div>
+            <p className="text-lg text-muted-foreground">Loading room content...</p>
+            <p className="mt-2 text-sm text-muted-foreground">Room ID: {roomId}</p>
           </div>
         </main>
       </div>
@@ -322,17 +365,17 @@ export default function EditorPage() {
         } as React.CSSProperties}
       >
         <AppSidebar activeFile={activeFile} onFileSelect={setActiveFile} />
-        <SidebarInset className="bg-[#1E1E1E] overflow-hidden flex flex-col h-screen">
+        <SidebarInset className="bg-background overflow-hidden flex flex-col h-screen">
           {/* Header */}
-          <header className="flex items-center justify-between border-b border-[#3C3C3C] bg-[#222831] px-6 py-3 shrink-0">
+          <header className="flex items-center justify-between border-b border-border bg-card px-6 py-3 shrink-0">
             <div className="flex items-center space-x-4">
-              <SidebarTrigger className="-ml-2 mr-2 text-[#CCCCCC]" />
+              <SidebarTrigger className="-ml-2 mr-2 text-muted-foreground" />
               <span className="rounded-full bg-green-500/20 px-3 py-1 text-sm text-green-400">
                 Connected
               </span>
               <SaveStatusIndicator status={saveStatus} />
-              <div className="text-sm text-gray-400">
-                Room: <span className="font-mono text-gray-300">{roomId}</span>
+              <div className="text-sm text-muted-foreground">
+                Room: <span className="font-mono text-foreground">{roomId}</span>
               </div>
             </div>
 
@@ -353,7 +396,7 @@ export default function EditorPage() {
               {/* Leave Room Button */}
               <button
                 onClick={() => setShowLeaveDialog(true)}
-                className="rounded-lg bg-[#222831] border border-gray-600 px-4 py-2 text-sm text-white transition-colors hover:bg-[#1a1e24]"
+                className="rounded-lg bg-muted border border-border px-4 py-2 text-sm text-foreground transition-colors hover:bg-card"
               >
                 Leave Room
               </button>
@@ -381,13 +424,13 @@ export default function EditorPage() {
               <DialogFooter className="gap-2">
                 <button
                   onClick={() => setShowLeaveDialog(false)}
-                  className="rounded-lg border border-gray-600 bg-gray-700/50 px-4 py-2 text-sm text-white transition-colors hover:bg-gray-700"
+                  className="rounded-lg border border-border bg-secondary/50 px-4 py-2 text-sm text-foreground transition-colors hover:bg-secondary"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleLeaveRoom}
-                  className="rounded-lg bg-red-600 px-4 py-2 text-sm text-white transition-colors hover:bg-red-700"
+                  className="rounded-lg bg-destructive px-4 py-2 text-sm text-destructive-foreground transition-colors hover:bg-destructive/90"
                 >
                   Leave Room
                 </button>

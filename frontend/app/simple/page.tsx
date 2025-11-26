@@ -2,13 +2,16 @@
 
 import React from "react";
 import dynamic from "next/dynamic";
+import { LoaderThree } from "@/components/ui/loader";
 
 const Editor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
   loading: () => (
     <div className="flex h-screen w-full items-center justify-center bg-gray-900">
       <div className="text-center">
-        <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
+        <div className="flex justify-center mb-4">
+          <LoaderThree />
+        </div>
         <p className="text-lg text-gray-300">Loading Editor...</p>
       </div>
     </div>
