@@ -2,7 +2,7 @@
 
 A real-time collaborative web code editor built with Next.js, PartyKit, and Yjs CRDT for conflict-free synchronization. Multiple users can simultaneously edit HTML, CSS, and JavaScript files in separate rooms with live preview and user presence tracking.
 
-![Coil Code Banner](public/screenshots/editor-preview.png)
+![Coil Code Banner](frontend/public/screenshots/editor-preview.png)
 
 ## Features
 
