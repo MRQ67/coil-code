@@ -2,6 +2,18 @@ import type { NextConfig } from "next";
 const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'api.dicebear.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'avatar.iran.liara.run',
+      },
+    ],
+  },
   turbopack: {}, // Add empty turbopack config to avoid error
   webpack: (config, { isServer }) => {
     // Handle .wasm files
