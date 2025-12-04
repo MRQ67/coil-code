@@ -115,7 +115,7 @@ export const LoaderThree = () => {
           initial={{ pathLength: 0, fill: "var(--fill-initial)" }}
           animate={{ pathLength: 1, fill: "var(--fill-final)" }}
           transition={{
-            duration: 2,
+            duration: 0.8, // Reduced from 2 to 0.8 for faster animation
             ease: "easeInOut",
             repeat: Infinity,
             repeatType: "reverse",
@@ -137,7 +137,7 @@ export const SVGLoader = () => {
       <motion.div
         animate={{ rotate: 360 }}
         transition={{
-          duration: 2,
+          duration: 1, // Reduced from 2 to 1 for faster animation
           repeat: Infinity,
           ease: "linear",
         }}
