@@ -33,11 +33,20 @@ export default function HomePage() {
   const [roomCode, setRoomCode] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSignOutDialogOpen, setIsSignOutDialogOpen] = useState(false);
+  const [isCreatingRoom, setIsCreatingRoom] = useState(false);
 
   const { userInfo, isLoading: isUserLoading, clearUserInfo } = useUsername();
 
-  const createNewRoom = () => {
-    router.push(`/editor/${nanoid(10)}`);
+  const createNewRoom = async () => {
+    if (isCreatingRoom) return; // Prevent multiple clicks
+
+    setIsCreatingRoom(true);
+    try {
+      const roomId = nanoid(10);
+      router.push(`/editor/${roomId}`);
+    } finally {
+      setIsCreatingRoom(false);
+    }
   };
 
   const handleJoinRoom = (code: string) => {
@@ -203,10 +212,22 @@ export default function HomePage() {
                 >
                   <button
                     onClick={createNewRoom}
-                    className="group bg-[#E6E6E6] text-black px-6 py-3.5 rounded-xl text-lg font-semibold hover:bg-white transition-all duration-200 flex items-center gap-2 w-full sm:w-auto justify-between"
+                    disabled={isCreatingRoom}
+                    className="group bg-[#E6E6E6] text-black px-6 py-3.5 rounded-xl text-lg font-semibold hover:bg-white transition-all duration-200 flex items-center gap-2 w-full sm:w-auto justify-between disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <span>Create New Room</span>
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    {isCreatingRoom ? (
+                      <>
+                        <span>Creating...</span>
+                        <div className="w-5 h-5 flex justify-center items-center">
+                          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <span>Create New Room</span>
+                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                      </>
+                    )}
                   </button>
 
                   <div className="flex items-center gap-4 w-full sm:w-auto">
@@ -422,10 +443,20 @@ export default function HomePage() {
                 >
                   <button
                     onClick={createNewRoom}
-                    className="bg-primary text-primary-foreground px-8 py-2 rounded-xl text-lg font-semibold hover:transform hover:scale-105 hover:shadow-lg transition-all duration-200 flex items-center space-x-2 w-fit"
+                    disabled={isCreatingRoom}
+                    className="bg-primary text-primary-foreground px-8 py-2 rounded-xl text-lg font-semibold hover:transform hover:scale-105 hover:shadow-lg transition-all duration-200 flex items-center space-x-2 w-fit disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <span>Create New Room</span>
-                    <span>→</span>
+                    {isCreatingRoom ? (
+                      <>
+                        <span>Creating...</span>
+                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                      </>
+                    ) : (
+                      <>
+                        <span>Create New Room</span>
+                        <span>→</span>
+                      </>
+                    )}
                   </button>
 
                   <span className="text-muted-foreground text-sm font-medium">
