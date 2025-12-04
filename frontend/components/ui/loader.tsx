@@ -102,7 +102,7 @@ export const LoaderThree = () => {
       height="28"
       viewBox="0 0 88 28"
       fill="none"
-      className="h-20 w-20 text-foreground [--fill-final:var(--color-yellow-300)] [--fill-initial:var(--color-neutral-50)] dark:text-foreground dark:[--fill-final:var(--color-yellow-500)] dark:[--fill-initial:var(--color-neutral-800)]"
+      className="h-20 w-20 text-foreground [--fill-final:#facc15] [--fill-initial:#efefef] dark:[--fill-final:#eab308] dark:[--fill-initial:#262626]"
     >
       <mask id="mask0_16_21" style={{ maskType: "luminance" }} maskUnits="userSpaceOnUse" x="0" y="0" width="88" height="28">
         <path d="M0 0H87.14V27.6129H0V0Z" fill="white"/>
