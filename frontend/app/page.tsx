@@ -513,7 +513,7 @@ export default function HomePage() {
               // --- NEW USER RIGHT CONTENT (ORIGINAL VIDEO) ---
               <motion.div
                 variants={itemVariants}
-                className="relative rounded-xl shadow-2xl overflow-hidden border-4 border-card aspect-video w-full md:w-11/12 -mt-12"
+                className="relative rounded-xl shadow-2xl overflow-hidden border-4 border-card aspect-video w-full md:w-11/12 -mt-6 ml-2"
               >
                 <video
                   src="/video/Coil_code_demo.mp4"
